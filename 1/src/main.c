@@ -8,21 +8,23 @@
 #define OK 0
 #define ERR 1
 
-struct Decimal {
+struct decimal_s {
     int sign;
     int point;
     int exponent;
     int digits[MANTISSA_LEN];
 };
 
-void clear_decimal(struct Decimal *val) {
+typedef struct decimal_s decimal_t;
+
+void clear_decimal(decimal_t *val) {
     val->sign = 1;
     val->point = 0;
     val->exponent = 0;
     memset(val->digits, 0, sizeof(val->digits));
 }
 
-int scanf_decimal(struct Decimal *val) {
+int scanf_decimal(decimal_t *val) {
 
     char c;
     int digit_i = 0;
@@ -118,7 +120,7 @@ int scanf_decimal(struct Decimal *val) {
     return OK;
 }
 
-void print_decimal(struct Decimal *val) {
+void print_decimal(decimal_t *val) {
     printf("%c", val->sign >= 0 ? '+' : '-');
 
     if (val->point == 0)
@@ -140,7 +142,7 @@ void print_decimal(struct Decimal *val) {
 }
 
 int main() {
-    struct Decimal a = {
+    decimal_t a = {
         .sign = 1,
         .point = 0,
         .exponent = 2,
