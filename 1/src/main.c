@@ -3,72 +3,88 @@
 #include <string.h>
 #include <stdbool.h>
 
-#define MANTISSA_LEN 30
+#define MANTISSA_LEN 5
 #define EXPONENT_LEN 5
 #define OK 0
 #define ERR 1
 
-struct decimal_s {
-    int sign;
+struct decimal_s
+{
+    signed char sign;
     int point;
     int exponent;
-    int digits[MANTISSA_LEN];
+    signed char digits[MANTISSA_LEN];
 };
 
 typedef struct decimal_s decimal_t;
 
-void clear_decimal(decimal_t *val) {
+void set_zero_decimal(decimal_t *val)
+{
     val->sign = 1;
     val->point = 0;
     val->exponent = 0;
     memset(val->digits, 0, sizeof(val->digits));
 }
 
-int scanf_decimal(decimal_t *val) {
-
+int scanf_decimal(decimal_t *val)
+{
     char c;
     int digit_i = 0;
     bool have_point = false;
     bool have_exp = false;
+    bool is_leading_zero = false;
     int exp_sign = 1;
     int exp_i = 0;
 
-    clear_decimal(val);
+    set_zero_decimal(val);
 
-    do {
+    do
+    {
         if (scanf("%c", &c) != 1)
             return ERR;
     } while (c == ' ' || c == '\n');
 
     if (c == '+')
         val->sign = 1;
-    else if ( c == '-')
+    else if (c == '-')
         val->sign = -1;
-    else if ( c == '.') {
+    else if (c == '.')
+    {
         val->point = 0;
         have_point = true;
+        is_leading_zero = false;
     }
-    else if ('0' <= c && c <= '9')
+    else if ('0' < c && c <= '9')
+    {
         val->digits[digit_i++] = c - '0';
-    else
+        is_leading_zero = false;
+    }
+    else if (c != '0')
         return ERR;
 
-    while (1) {
+    while (1)
+    {
         if (scanf("%c", &c) != 1)
             return ERR;
 
-        if ('0' <= c && c <= '9') {
+        if ('0' <= c && c <= '9')
+        {
+            if (c == '0' && is_leading_zero)
+                continue;
             if (digit_i >= MANTISSA_LEN)
                 return ERR;
             val->digits[digit_i++] = c - '0';
+            is_leading_zero = false;
         }
-        else if (c == '.') {
+        else if (c == '.')
+        {
             if (have_point)
                 return ERR;
             have_point = true;
             val->point = digit_i;
         }
-        else if (c == 'e' || c == 'E') {
+        else if (c == 'e' || c == 'E')
+        {
             have_exp = true;
             break;
         }
@@ -78,7 +94,8 @@ int scanf_decimal(decimal_t *val) {
             return ERR;
     }
 
-    if (!have_point) {
+    if (!have_point)
+    {
         val->point = digit_i;
     }
 
@@ -90,20 +107,23 @@ int scanf_decimal(decimal_t *val) {
 
     if (c == '+')
         exp_sign = 1;
-    else if ( c == '-')
+    else if (c == '-')
         exp_sign = -1;
-    else if ('0' <= c && c <= '9') {
+    else if ('0' <= c && c <= '9')
+    {
         val->exponent = c - '0';
         exp_i++;
     }
     else
         return ERR;
 
-    while (1) {
+    while (1)
+    {
         if (scanf("%c", &c) != 1)
             return ERR;
 
-        if ('0' <= c && c <= '9') {
+        if ('0' <= c && c <= '9')
+        {
             if (exp_i >= EXPONENT_LEN)
                 return ERR;
             val->exponent = val->exponent * 10 + c - '0';
@@ -120,7 +140,136 @@ int scanf_decimal(decimal_t *val) {
     return OK;
 }
 
-void print_decimal(decimal_t *val) {
+int divide_decimal(const decimal_t *dividend, const decimal_t *divider, decimal_t *quotient)
+{
+    set_zero_decimal(quotient);
+
+    signed char digits[MANTISSA_LEN * 2 + 1] = {0};
+    signed char q_digits[MANTISSA_LEN + 2] = {0};
+    memcpy(digits, dividend->digits, sizeof(dividend->digits));
+
+    int i = 0;
+    while (i < MANTISSA_LEN + 2)
+    {\
+        printf("\n");
+        for (int k = 0; k < MANTISSA_LEN * 2 + 1; k++)
+        {
+            printf("%d", digits[k]);
+        }
+        printf("\n");
+
+        for (int k = 0; k < i; k++)
+        {
+            printf(" ");
+        }
+        for (int k = 0; k < MANTISSA_LEN; k++)
+        {
+            printf("%d", divider->digits[k]);
+        }
+        printf("\n");
+
+        int compare = 0;
+
+        for (int j = 0; j < i && compare == 0; j++)
+        {
+            compare = digits[j] != 0;
+        }
+
+        for (int j = 0; j < MANTISSA_LEN && compare == 0; j++)
+        {
+            signed char a = digits[j + i];
+            signed char b = divider->digits[j];
+            compare = a == b ? 0 : a < b ? -1 : 1;
+        }
+
+        printf("divider is %s\n", compare == 0 ? "equal" : compare > 0 ? "less" : "greater");
+
+        if (compare < 0)
+        {
+            i++;
+            for (int k = 0; k <= i; k++)
+            {
+                printf("%d", q_digits[k]);
+            }
+            printf("\n");
+            continue;
+        }
+
+        q_digits[i] += 1;
+
+        for (int k = 0; k <= i; k++)
+        {
+            printf("%d", q_digits[k]);
+        }
+        printf("\n");
+
+        if (compare == 0)
+            break;
+
+        int acc = 0;
+
+        for (int j = MANTISSA_LEN - 1; j >= 0; j--)
+        {
+            signed char *a = digits+j+i;
+            *a -= divider->digits[j] + acc;
+            acc = 0;
+            if (*a < 0)
+            {
+                acc = 1;
+                *a += 10;
+            }
+        }
+
+        for (int j = i - 1; j >= 0; j--)
+        {
+            signed char *a = digits+j;
+            *a -= acc;
+            acc = 0;
+            if (*a < 0)
+            {
+                acc = 1;
+                *a += 10;
+            }
+        }
+    }
+
+    if (q_digits[0] == 0)
+    {
+        for (int i = 0; i < MANTISSA_LEN + 1; i++)
+            q_digits[i] = q_digits[i + 1];
+    }
+
+    if (q_digits[MANTISSA_LEN] >= 5)
+    {
+        q_digits[MANTISSA_LEN - 1]++;
+        int acc = 0;
+        for (int j = MANTISSA_LEN - 1; j >= 0; j--)
+        {
+            signed char *a = digits+j;
+            *a += acc;
+            acc = 0;
+            if (*a >= 10)
+            {
+                acc = 1;
+                *a -= 10;
+            }
+        }
+
+    }
+
+    printf("\nResult:\n");
+
+    for (int k = 0; k < MANTISSA_LEN; k++)
+    {
+        printf("%d", q_digits[k]);
+    }
+    printf("\n");
+
+    return OK;
+}
+
+void print_decimal(const decimal_t *val)
+{
     printf("%c", val->sign >= 0 ? '+' : '-');
 
     if (val->point == 0)
@@ -141,22 +290,35 @@ void print_decimal(decimal_t *val) {
     printf("E%+d\n", val->exponent);
 }
 
-int main() {
+int main()
+{
     decimal_t a = {
         .sign = 1,
         .point = 0,
-        .exponent = 2,
-        .digits = {1},
+        .exponent = 0,
+        .digits = {1,2,3,4,3},
     };
+    decimal_t b = {
+        .sign = 1,
+        .point = 0,
+        .exponent = 0,
+        .digits = {3,1},
+    };
+    decimal_t q;
 
-    printf("ENTER: ");
-    if (scanf_decimal(&a) != OK) {
-        printf("Invalid input\n");
-        return EXIT_FAILURE;
-    }
+    divide_decimal(&a, &b, &q);
 
-    printf("a: ");
-    print_decimal(&a);
+
+    //
+    // printf("ENTER: ");
+    // if (scanf_decimal(&a) != OK)
+    // {
+    //     printf("Invalid input\n");
+    //     return EXIT_FAILURE;
+    // }
+
+    // printf("a: ");
+    // print_decimal(&a);
 
     return EXIT_SUCCESS;
 }
