@@ -5,7 +5,7 @@
 
 #define DEBUG
 #define MANTISSA_LEN 5
-#define EXPONENT_LEN 5
+#define MAX_EXPONENT 99999
 #define OK 0
 #define ERR 1
 
@@ -33,18 +33,18 @@ int scanf_decimal(decimal_t *val)
     int digit_i = 0;
     bool have_point = false;
     bool have_exp = false;
-    bool is_leading_zero = false;
     int exp_sign = 1;
-    int exp_i = 0;
 
     set_zero_decimal(val);
 
+    // read first non empty char
     do
     {
         if (scanf("%c", &c) != 1)
             return ERR;
     } while (c == ' ' || c == '\n');
 
+    // process first char of mantissa
     if (c == '+')
         val->sign = 1;
     else if (c == '-')
@@ -53,29 +53,26 @@ int scanf_decimal(decimal_t *val)
     {
         val->point = 0;
         have_point = true;
-        is_leading_zero = false;
     }
-    else if ('0' < c && c <= '9')
+    else if ('0' <= c && c <= '9')
     {
         val->digits[digit_i++] = c - '0';
-        is_leading_zero = false;
     }
-    else if (c != '0')
+    else
         return ERR;
 
-    while (1)
+    // process chars of mantissa
+    while (true)
     {
+        // read next char
         if (scanf("%c", &c) != 1)
             return ERR;
 
         if ('0' <= c && c <= '9')
         {
-            if (c == '0' && is_leading_zero)
-                continue;
             if (digit_i >= MANTISSA_LEN)
                 return ERR;
             val->digits[digit_i++] = c - '0';
-            is_leading_zero = false;
         }
         else if (c == '.')
         {
@@ -96,9 +93,7 @@ int scanf_decimal(decimal_t *val)
     }
 
     if (!have_point)
-    {
         val->point = digit_i;
-    }
 
     if (!have_exp)
         return OK;
@@ -106,18 +101,17 @@ int scanf_decimal(decimal_t *val)
     if (scanf("%c", &c) != 1)
         return ERR;
 
+    // process first char of exponent
     if (c == '+')
         exp_sign = 1;
     else if (c == '-')
         exp_sign = -1;
     else if ('0' <= c && c <= '9')
-    {
         val->exponent = c - '0';
-        exp_i++;
-    }
     else
         return ERR;
 
+    // process chars of exponent
     while (1)
     {
         if (scanf("%c", &c) != 1)
@@ -125,10 +119,9 @@ int scanf_decimal(decimal_t *val)
 
         if ('0' <= c && c <= '9')
         {
-            if (exp_i >= EXPONENT_LEN)
-                return ERR;
             val->exponent = val->exponent * 10 + c - '0';
-            exp_i++;
+            if (val->exponent > MAX_EXPONENT)
+                return ERR;
         }
         else if (c == '\n' || c == ' ')
             break;
@@ -141,23 +134,47 @@ int scanf_decimal(decimal_t *val)
     return OK;
 }
 
+int safe_add_int(int a, int b, int *s)
+{
+    *s = a + b;
+    if (b > 0)
+        return *s < a ? ERR : OK;
+    return *s > a ? ERR : OK;
+}
+
 int divide_decimal(const decimal_t *dividend, const decimal_t *divider, decimal_t *quotient)
 {
     set_zero_decimal(quotient);
 
-    signed char digits[MANTISSA_LEN * 2 + 1] = {0};
-    signed char q_digits[MANTISSA_LEN + 2] = {0};
+    /*
+     + 1 to length for leading zero if dividend is less then divider
+     + 1 to length for last digit used for rounding
+    */
+    #define QUOTIENT_DIGITS_LEN (MANTISSA_LEN + 2)
+    signed char q_digits[QUOTIENT_DIGITS_LEN] = {0};
+    /*
+     MANTISSA_LEN * 2 for accumulate subtitution for last digit in q_digits
+     + 1 to array length for leading zero if dividend is less then divider
+    */
+    #define DIVIDEND_DIGITS_LEN (MANTISSA_LEN * 2 + 1)
+    signed char digits[DIVIDEND_DIGITS_LEN] = {0};
+
     memcpy(digits, dividend->digits, sizeof(dividend->digits));
 
-    quotient->exponent = 1 + dividend->exponent - divider->exponent + dividend->point - divider->point;
+    if (safe_add_int(dividend->exponent, -divider->exponent, &quotient->exponent) != OK)
+        return ERR;
+
+    quotient->exponent += dividend->point - divider->point;
+
     quotient->sign = dividend->sign * divider->sign;
 
+    // divide numbers using long division algorithm
     int i = 0;
-    while (i < MANTISSA_LEN + 2)
+    while (i < QUOTIENT_DIGITS_LEN)
     {
         #ifdef DEBUG
             printf("\n");
-            for (int k = 0; k < MANTISSA_LEN * 2 + 1; k++)
+            for (int k = 0; k < DIVIDEND_DIGITS_LEN; k++)
                 printf("%d", digits[k]);
             printf("\n");
 
@@ -168,6 +185,7 @@ int divide_decimal(const decimal_t *dividend, const decimal_t *divider, decimal_
             printf("\n");
         #endif
 
+        // compare dividend and divider
         int compare = 0;
 
         for (int j = 0; j < i && compare == 0; j++)
@@ -193,7 +211,7 @@ int divide_decimal(const decimal_t *dividend, const decimal_t *divider, decimal_
 
         if (compare < 0)
         {
-            i++;
+            i++; // shift divider digits
             #ifdef DEBUG
                 for (int k = 0; k <= i; k++)
                     printf("%d", q_digits[k]);
@@ -203,6 +221,7 @@ int divide_decimal(const decimal_t *dividend, const decimal_t *divider, decimal_
             continue;
         }
 
+        // increase quotient digit
         q_digits[i] += 1;
 
         #ifdef DEBUG
@@ -214,6 +233,7 @@ int divide_decimal(const decimal_t *dividend, const decimal_t *divider, decimal_
         if (compare == 0)
             break;
 
+        // subtitute divider digits from dividend
         int acc = 0;
 
         for (int j = MANTISSA_LEN - 1; j >= 0; j--)
@@ -228,7 +248,7 @@ int divide_decimal(const decimal_t *dividend, const decimal_t *divider, decimal_
             }
         }
 
-        for (int j = i - 1; j >= 0; j--)
+        for (int j = i - 1; j >= 0 && acc != 0; j--)
         {
             signed char *a = digits+j;
             *a -= acc;
@@ -241,20 +261,26 @@ int divide_decimal(const decimal_t *dividend, const decimal_t *divider, decimal_
         }
     }
 
+    // if dividend digits were less then divider digits in the first row
     if (q_digits[0] == 0)
     {
-        quotient->exponent -= 1;
+        // shift back digits
         for (int i = 0; i < MANTISSA_LEN + 1; i++)
             q_digits[i] = q_digits[i + 1];
     }
+    else
+        quotient->exponent += 1;
 
+    if (abs(quotient->exponent) > MAX_EXPONENT)
+        return ERR;
+
+    // round last digit
     if (q_digits[MANTISSA_LEN] >= 5)
     {
-        q_digits[MANTISSA_LEN - 1]++;
-        int acc = 0;
-        for (int j = MANTISSA_LEN - 1; j >= 0; j--)
+        int acc = 1;
+        for (int j = MANTISSA_LEN - 1; j >= 0 && acc != 0; j--)
         {
-            signed char *a = digits+j;
+            signed char *a = q_digits+j;
             *a += acc;
             acc = 0;
             if (*a >= 10)
@@ -263,7 +289,6 @@ int divide_decimal(const decimal_t *dividend, const decimal_t *divider, decimal_
                 *a -= 10;
             }
         }
-
     }
 
     #ifdef DEBUG
@@ -274,6 +299,9 @@ int divide_decimal(const decimal_t *dividend, const decimal_t *divider, decimal_
     #endif
 
     memcpy(quotient->digits, q_digits, sizeof(quotient->digits));
+
+    #undef QUOTIENT_DIGITS_LEN
+    #undef DIVIDEND_DIGITS_LEN
 
     return OK;
 }
@@ -300,41 +328,64 @@ void print_decimal(const decimal_t *val)
     printf("E%+d", val->exponent);
 }
 
+void print_hello()
+{
+    printf("──┼─\n");
+}
+
+void scanf_line()
+{
+    char c;
+    do
+    {
+        if (scanf("%c", &c) != 1)
+            return;
+    } while (c != '\n');
+}
+
 int main()
 {
-    decimal_t a = {
-        .sign = 1,
-        .point = 2,
-        .exponent = 0,
-        .digits = {2,2},
-    };
-    decimal_t b = {
-        .sign = 1,
-        .point = 1,
-        .exponent = 0,
-        .digits = {7},
-    };
-    decimal_t q;
+    decimal_t a;
+    decimal_t b;
+    decimal_t ans;
 
-    divide_decimal(&a, &b, &q);
+    print_hello();
+
+    printf("[X] / [_] =\n");
+    printf("Enter dividend:\n");
+
+    while(scanf_decimal(&a) != OK)
+    {
+        scanf_line();
+        printf("Invalid input\n\n");
+        printf("Enter dividend:\n");
+    }
+
+    print_decimal(&a);
+    printf(" / [X] =\n");
+    printf("Enter divider:\n");
+
+    while(scanf_decimal(&b) != OK)
+    {
+        scanf_line();
+        printf("Invalid input\n\n");
+        printf("Enter divider:\n");
+    }
+
+    if (divide_decimal(&a, &b, &ans) != OK)
+    {
+        printf("Error on division.\n");
+        return EXIT_FAILURE;
+    }
+
+    printf("Result:\n");
 
     print_decimal(&a);
     printf(" / ");
     print_decimal(&b);
     printf(" = ");
-    print_decimal(&q);
+    print_decimal(&ans);
     printf("\n");
-
-    //
-    // printf("ENTER: ");
-    // if (scanf_decimal(&a) != OK)
-    // {
-    //     printf("Invalid input\n");
-    //     return EXIT_FAILURE;
-    // }
-
-    // printf("a: ");
-    // print_decimal(&a);
 
     return EXIT_SUCCESS;
 }
