@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdbool.h>
 
+#define DEBUG
 #define MANTISSA_LEN 5
 #define EXPONENT_LEN 5
 #define OK 0
@@ -148,25 +149,24 @@ int divide_decimal(const decimal_t *dividend, const decimal_t *divider, decimal_
     signed char q_digits[MANTISSA_LEN + 2] = {0};
     memcpy(digits, dividend->digits, sizeof(dividend->digits));
 
+    quotient->exponent = 1 + dividend->exponent - divider->exponent + dividend->point - divider->point;
+    quotient->sign = dividend->sign * divider->sign;
+
     int i = 0;
     while (i < MANTISSA_LEN + 2)
-    {\
-        printf("\n");
-        for (int k = 0; k < MANTISSA_LEN * 2 + 1; k++)
-        {
-            printf("%d", digits[k]);
-        }
-        printf("\n");
+    {
+        #ifdef DEBUG
+            printf("\n");
+            for (int k = 0; k < MANTISSA_LEN * 2 + 1; k++)
+                printf("%d", digits[k]);
+            printf("\n");
 
-        for (int k = 0; k < i; k++)
-        {
-            printf(" ");
-        }
-        for (int k = 0; k < MANTISSA_LEN; k++)
-        {
-            printf("%d", divider->digits[k]);
-        }
-        printf("\n");
+            for (int k = 0; k < i; k++)
+                printf(" ");
+            for (int k = 0; k < MANTISSA_LEN; k++)
+                printf("%d", divider->digits[k]);
+            printf("\n");
+        #endif
 
         int compare = 0;
 
@@ -182,26 +182,34 @@ int divide_decimal(const decimal_t *dividend, const decimal_t *divider, decimal_
             compare = a == b ? 0 : a < b ? -1 : 1;
         }
 
-        printf("divider is %s\n", compare == 0 ? "equal" : compare > 0 ? "less" : "greater");
+        #ifdef DEBUG
+            if (compare == 0)
+                printf("dividend is equal\n");
+            else if (compare > 0)
+                printf("dividend is greater\n");
+            else
+                printf("dividend is less\n");
+        #endif
 
         if (compare < 0)
         {
             i++;
-            for (int k = 0; k <= i; k++)
-            {
-                printf("%d", q_digits[k]);
-            }
-            printf("\n");
+            #ifdef DEBUG
+                for (int k = 0; k <= i; k++)
+                    printf("%d", q_digits[k]);
+                printf("\n");
+            #endif
+
             continue;
         }
 
         q_digits[i] += 1;
 
-        for (int k = 0; k <= i; k++)
-        {
-            printf("%d", q_digits[k]);
-        }
-        printf("\n");
+        #ifdef DEBUG
+            for (int k = 0; k <= i; k++)
+                printf("%d", q_digits[k]);
+            printf("\n");
+        #endif
 
         if (compare == 0)
             break;
@@ -235,6 +243,7 @@ int divide_decimal(const decimal_t *dividend, const decimal_t *divider, decimal_
 
     if (q_digits[0] == 0)
     {
+        quotient->exponent -= 1;
         for (int i = 0; i < MANTISSA_LEN + 1; i++)
             q_digits[i] = q_digits[i + 1];
     }
@@ -257,13 +266,14 @@ int divide_decimal(const decimal_t *dividend, const decimal_t *divider, decimal_
 
     }
 
-    printf("\nResult:\n");
+    #ifdef DEBUG
+        printf("\nResult digits:\n");
+        for (int k = 0; k < MANTISSA_LEN; k++)
+            printf("%d", q_digits[k]);
+        printf("\n");
+    #endif
 
-    for (int k = 0; k < MANTISSA_LEN; k++)
-    {
-        printf("%d", q_digits[k]);
-    }
-    printf("\n");
+    memcpy(quotient->digits, q_digits, sizeof(quotient->digits));
 
     return OK;
 }
@@ -287,27 +297,33 @@ void print_decimal(const decimal_t *val)
     for (int i = val->point; i <= end; i++)
         printf("%d", val->digits[i]);
 
-    printf("E%+d\n", val->exponent);
+    printf("E%+d", val->exponent);
 }
 
 int main()
 {
     decimal_t a = {
         .sign = 1,
-        .point = 0,
+        .point = 2,
         .exponent = 0,
-        .digits = {1,2,3,4,3},
+        .digits = {2,2},
     };
     decimal_t b = {
         .sign = 1,
-        .point = 0,
+        .point = 1,
         .exponent = 0,
-        .digits = {3,1},
+        .digits = {7},
     };
     decimal_t q;
 
     divide_decimal(&a, &b, &q);
 
+    print_decimal(&a);
+    printf(" / ");
+    print_decimal(&b);
+    printf(" = ");
+    print_decimal(&q);
+    printf("\n");
 
     //
     // printf("ENTER: ");
