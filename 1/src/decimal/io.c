@@ -3,7 +3,7 @@
 #include "main.h"
 #include "io.h"
 
-int scanf_decimal(decimal_t *val)
+int scanf_decimal_float(decimal_t *val)
 {
     char c;
     int digit_i = 0;
@@ -110,9 +110,58 @@ int scanf_decimal(decimal_t *val)
     return OK;
 }
 
-void print_decimal(char *format, const decimal_t *val)
+int scanf_decimal_int(decimal_t *val)
 {
-    while ()
+    char c;
+    int digit_i = 0;
+
+    set_zero_decimal(val);
+
+    // read first non empty char
+    do
+    {
+        if (scanf("%c", &c) != 1)
+            return ERR;
+    } while (c == ' ' || c == '\n');
+
+    // process first char of mantissa
+    if (c == '+')
+        val->sign = 1;
+    else if (c == '-')
+        val->sign = -1;
+    else if ('0' <= c && c <= '9')
+    {
+        val->digits[digit_i++] = c - '0';
+    }
+    else
+        return ERR;
+
+    // process chars of mantissa
+    while (true)
+    {
+        // read next char
+        if (scanf("%c", &c) != 1)
+            return ERR;
+
+        if ('0' <= c && c <= '9')
+        {
+            if (digit_i >= MANTISSA_LEN)
+                return ERR;
+            val->digits[digit_i++] = c - '0';
+        }
+        else if (c == '\n' || c == ' ')
+            break;
+        else
+            return ERR;
+    }
+
+    val->point = digit_i;
+
+    return OK;
+}
+
+void print_decimal_float(const decimal_t *val)
+{
     printf("%c", val->sign >= 0 ? '+' : '-');
 
     if (val->point == 0)
@@ -131,4 +180,12 @@ void print_decimal(char *format, const decimal_t *val)
         printf("%d", val->digits[i]);
 
     printf("E%+d", val->exponent);
+}
+
+void print_decimal_int(const decimal_t *val)
+{
+    printf("%c", val->sign >= 0 ? ' ' : '-');
+
+    for (int i = 0; i < val->point; i++)
+        printf("%d", val->digits[i]);
 }
