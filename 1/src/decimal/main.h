@@ -14,6 +14,9 @@ typedef struct
     t_digit digits[MANTISSA_LEN];
 } t_decimal;
 
+/*
+  Записывает в val 0
+*/
 void set_zero_decimal(t_decimal *val);
 
 #endif // __DECIMAL_MAIN_H__

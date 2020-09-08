@@ -5,6 +5,9 @@
 #include "common.h"
 #include "decimal.h"
 
+/*
+  Выводит в консоль приветственное сообщение c описанием программы
+*/
 void print_hello()
 {
 
@@ -19,12 +22,18 @@ void print_hello()
     printf("\n");
 }
 
+/*
+  Выводит в консоль линейку в 30 символов
+*/
 void print_ruler()
 {
     printf("1        10        20       30\n");
     printf("|--------|---------|---------|\n");
 }
 
+/*
+  Считывает с консоли строку до конца
+*/
 void scanf_line()
 {
     char c;
@@ -64,7 +73,7 @@ int main()
     {
         scanf_line();
         printf("Неправильный ввод\n\n");
-        printf("Введите знаменталь (целое):\n");
+        printf("Введите знаменатель (целое):\n");
         print_ruler();
     }
 
