@@ -12,8 +12,6 @@ int get_start_zeros_number(const t_digit *arr)
     return n;
 }
 
-
-
 int divide_decimal(const t_decimal *dividend, const t_decimal *divider, t_decimal *quotient)
 {
     set_zero_decimal(quotient);
@@ -144,8 +142,6 @@ int divide_decimal(const t_decimal *dividend, const t_decimal *divider, t_decima
             }
         }
     }
-
-
 
     // if dividend digits were less then divider digits in the first row
     if (q_digits[0] == 0)

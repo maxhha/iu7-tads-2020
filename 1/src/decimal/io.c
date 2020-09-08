@@ -6,9 +6,11 @@
 int scanf_decimal_float(t_decimal *val)
 {
     char c;
-    int digit_i = 0;
+    int digit_n = 0;
+    t_digit *digit_p = val->digits;
     bool have_point = false;
     bool have_exp = false;
+    bool start_zeros = true;
     int exp_sign = 1;
 
     set_zero_decimal(val);
@@ -29,10 +31,17 @@ int scanf_decimal_float(t_decimal *val)
     {
         val->point = 0;
         have_point = true;
+        start_zeros = false;
     }
-    else if ('0' <= c && c <= '9')
+    else if (c == '0')
     {
-        val->digits[digit_i++] = c - '0';
+        digit_n++;
+    }
+    else if ('0' < c && c <= '9')
+    {
+        digit_n++;
+        start_zeros = false;
+        *digit_p++ = c - '0';
     }
     else
         return ERR;
@@ -46,16 +55,21 @@ int scanf_decimal_float(t_decimal *val)
 
         if ('0' <= c && c <= '9')
         {
-            if (digit_i >= MANTISSA_LEN)
+            if (digit_n >= MANTISSA_LEN)
                 return ERR;
-            val->digits[digit_i++] = c - '0';
+            digit_n++;
+            if (start_zeros && c == '0')
+                continue;
+            start_zeros = false;
+            *digit_p++ = c - '0';
         }
         else if (c == '.')
         {
             if (have_point)
                 return ERR;
             have_point = true;
-            val->point = digit_i;
+            start_zeros = false;
+            val->point = (int) (digit_p - val->digits) / sizeof(t_digit);
         }
         else if (c == 'e' || c == 'E')
         {
@@ -69,7 +83,7 @@ int scanf_decimal_float(t_decimal *val)
     }
 
     if (!have_point)
-        val->point = digit_i;
+        val->point = (int) (digit_p - val->digits) / sizeof(t_digit);
 
     if (!have_exp)
         return OK;
@@ -113,7 +127,9 @@ int scanf_decimal_float(t_decimal *val)
 int scanf_decimal_int(t_decimal *val)
 {
     char c;
-    int digit_i = 0;
+    int digit_n = 0;
+    t_digit *digit_p = val->digits;
+    bool start_zeros = true;
 
     set_zero_decimal(val);
 
@@ -129,9 +145,15 @@ int scanf_decimal_int(t_decimal *val)
         val->sign = 1;
     else if (c == '-')
         val->sign = -1;
-    else if ('0' <= c && c <= '9')
+    else if (c == '0')
     {
-        val->digits[digit_i++] = c - '0';
+        digit_n++;
+    }
+    else if ('0' < c && c <= '9')
+    {
+        digit_n++;
+        start_zeros = false;
+        *digit_p++ = c - '0';
     }
     else
         return ERR;
@@ -145,9 +167,13 @@ int scanf_decimal_int(t_decimal *val)
 
         if ('0' <= c && c <= '9')
         {
-            if (digit_i >= MANTISSA_LEN)
+            if (digit_n >= MANTISSA_LEN)
                 return ERR;
-            val->digits[digit_i++] = c - '0';
+            digit_n++;
+            if (start_zeros && c == '0')
+                continue;
+            start_zeros = false;
+            *digit_p++ = c - '0';
         }
         else if (c == '\n' || c == ' ')
             break;
@@ -155,7 +181,7 @@ int scanf_decimal_int(t_decimal *val)
             return ERR;
     }
 
-    val->point = digit_i;
+    val->point = (int) (digit_p - val->digits) / sizeof(t_digit);
 
     return OK;
 }
@@ -181,6 +207,7 @@ void print_decimal_float(const t_decimal *val)
 
     printf("E%+d", val->exponent);
 }
+
 void print_decimal_int(const t_decimal *val)
 {
     if (val->sign < 0)
