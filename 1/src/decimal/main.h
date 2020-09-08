@@ -4,16 +4,16 @@
 
 #include "../common.h"
 
-struct decimal_s
+typedef signed char t_digit;
+
+typedef struct
 {
     signed char sign;
     int point;
     int exponent;
-    signed char digits[MANTISSA_LEN];
-};
+    t_digit digits[MANTISSA_LEN];
+} t_decimal;
 
-typedef struct decimal_s decimal_t;
-
-void set_zero_decimal(decimal_t *val);
+void set_zero_decimal(t_decimal *val);
 
 #endif // __DECIMAL_MAIN_H__

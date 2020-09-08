@@ -3,9 +3,9 @@
 
 #include "main.h"
 
-int scanf_decimal_int(decimal_t *val);
-int scanf_decimal_float(decimal_t *val);
-void print_decimal_int(const decimal_t *val);
-void print_decimal_float(const decimal_t *val);
+int scanf_decimal_int(t_decimal *val);
+int scanf_decimal_float(t_decimal *val);
+void print_decimal_int(const t_decimal *val);
+void print_decimal_float(const t_decimal *val);
 
 #endif // __DECIMAL_IO_H__

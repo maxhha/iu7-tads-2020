@@ -4,15 +4,17 @@
 #include "main.h"
 #include "division.h"
 
-int safe_add_int(int a, int b, int *s)
+int get_start_zeros_number(const t_digit *arr)
 {
-    *s = a + b;
-    if (b > 0)
-        return *s < a ? ERR : OK;
-    return *s > a ? ERR : OK;
+    int n = 0;
+    while (n < MANTISSA_LEN && arr[n] == 0)
+        n++;
+    return n;
 }
 
-int divide_decimal(const decimal_t *dividend, const decimal_t *divider, decimal_t *quotient)
+
+
+int divide_decimal(const t_decimal *dividend, const t_decimal *divider, t_decimal *quotient)
 {
     set_zero_decimal(quotient);
 
@@ -21,37 +23,32 @@ int divide_decimal(const decimal_t *dividend, const decimal_t *divider, decimal_
      + 1 to length for last digit used for rounding
     */
     #define QUOTIENT_DIGITS_LEN (MANTISSA_LEN + 2)
-    signed char q_digits[QUOTIENT_DIGITS_LEN] = {0};
-
     /*
      MANTISSA_LEN * 2 for accumulate subtitution for last digit in q_digits
      + 1 to array length for leading zero if dividend is less then divider
     */
     #define DIVIDEND_DIGITS_LEN (MANTISSA_LEN * 2 + 1)
-    signed char digits[DIVIDEND_DIGITS_LEN] = {0};
+    t_digit q_digits[QUOTIENT_DIGITS_LEN] = {0};
+    t_digit digits[DIVIDEND_DIGITS_LEN] = {0};
+    t_digit divider_digits[MANTISSA_LEN] = {0};
 
     memcpy(digits, dividend->digits, sizeof(dividend->digits));
 
-    signed char divider_digits[MANTISSA_LEN] = {0};
-
     // skip first 0-s in divider digits
-    int start = 0;
-    while (start < MANTISSA_LEN && divider->digits[start] == 0)
-        start++;
+    int start_zeros = get_start_zeros_number(divider->digits);
 
-    if (start == MANTISSA_LEN)
+    if (start_zeros == MANTISSA_LEN)
         return ERR;
 
     memcpy(
         divider_digits,
-        divider->digits + start,
-        sizeof(divider->digits) / MANTISSA_LEN * ( MANTISSA_LEN - start)
+        divider->digits + start_zeros,
+        sizeof(t_digit) * (MANTISSA_LEN - start_zeros)
     );
 
-    if (safe_add_int(dividend->exponent, -divider->exponent, &quotient->exponent) != OK)
-        return ERR;
-
-    quotient->exponent += dividend->point - divider->point + start;
+    quotient->exponent = dividend->exponent - divider->exponent;
+    quotient->exponent += dividend->point - divider->point;
+    quotient->exponent += start_zeros;
 
     quotient->sign = dividend->sign * divider->sign;
 
@@ -82,8 +79,8 @@ int divide_decimal(const decimal_t *dividend, const decimal_t *divider, decimal_
 
         for (int j = 0; j < MANTISSA_LEN && compare == 0; j++)
         {
-            signed char a = digits[j + i];
-            signed char b = divider_digits[j];
+            t_digit a = digits[j + i];
+            t_digit b = divider_digits[j];
             compare = a == b ? 0 : a < b ? -1 : 1;
         }
 
@@ -125,7 +122,7 @@ int divide_decimal(const decimal_t *dividend, const decimal_t *divider, decimal_
 
         for (int j = MANTISSA_LEN - 1; j >= 0; j--)
         {
-            signed char *a = digits+j+i;
+            t_digit *a = digits+j+i;
             *a -= divider_digits[j] + acc;
             acc = 0;
             if (*a < 0)
@@ -137,7 +134,7 @@ int divide_decimal(const decimal_t *dividend, const decimal_t *divider, decimal_
 
         for (int j = i - 1; j >= 0 && acc != 0; j--)
         {
-            signed char *a = digits+j;
+            t_digit *a = digits+j;
             *a -= acc;
             acc = 0;
             if (*a < 0)
@@ -147,6 +144,8 @@ int divide_decimal(const decimal_t *dividend, const decimal_t *divider, decimal_
             }
         }
     }
+
+
 
     // if dividend digits were less then divider digits in the first row
     if (q_digits[0] == 0)
@@ -171,7 +170,7 @@ int divide_decimal(const decimal_t *dividend, const decimal_t *divider, decimal_
         int acc = 1;
         for (int j = MANTISSA_LEN - 1; j >= 0 && acc != 0; j--)
         {
-            signed char *a = q_digits+j;
+            t_digit *a = q_digits+j;
             *a += acc;
             acc = 0;
             if (*a >= 10)

@@ -1,7 +1,7 @@
 #include <string.h>
 #include "main.h"
 
-void set_zero_decimal(decimal_t *val)
+void set_zero_decimal(t_decimal *val)
 {
     val->sign = 1;
     val->point = 0;

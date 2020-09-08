@@ -3,7 +3,7 @@
 #include "main.h"
 #include "io.h"
 
-int scanf_decimal_float(decimal_t *val)
+int scanf_decimal_float(t_decimal *val)
 {
     char c;
     int digit_i = 0;
@@ -110,7 +110,7 @@ int scanf_decimal_float(decimal_t *val)
     return OK;
 }
 
-int scanf_decimal_int(decimal_t *val)
+int scanf_decimal_int(t_decimal *val)
 {
     char c;
     int digit_i = 0;
@@ -160,7 +160,7 @@ int scanf_decimal_int(decimal_t *val)
     return OK;
 }
 
-void print_decimal_float(const decimal_t *val)
+void print_decimal_float(const t_decimal *val)
 {
     printf("%c", val->sign >= 0 ? '+' : '-');
 
@@ -181,10 +181,10 @@ void print_decimal_float(const decimal_t *val)
 
     printf("E%+d", val->exponent);
 }
-
-void print_decimal_int(const decimal_t *val)
+void print_decimal_int(const t_decimal *val)
 {
-    printf("%c", val->sign >= 0 ? ' ' : '-');
+    if (val->sign < 0)
+        printf("-");
 
     for (int i = 0; i < val->point; i++)
         printf("%d", val->digits[i]);

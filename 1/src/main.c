@@ -10,15 +10,19 @@ void print_hello()
 
     printf("******************************\n");
     printf("*                            *\n");
-    printf("* Long float number division *\n");
+    printf("*    Деление длинных чисел   *\n");
     printf("*                            *\n");
     printf("******************************\n");
     printf("\n");
-    printf("Examples:\n");
+    printf("Примеры:\n");
     printf("\n");
+    printf("\n");
+}
+
+void print_ruler()
+{
     printf("1        10        20       30\n");
     printf("|--------|---------|---------|\n");
-    printf("\n");
 }
 
 void scanf_line()
@@ -33,40 +37,44 @@ void scanf_line()
 
 int main()
 {
-    decimal_t a;
-    decimal_t b;
-    decimal_t ans;
+    t_decimal a;
+    t_decimal b;
+    t_decimal ans;
 
     print_hello();
 
-    printf("[(float) X] / [(int) _] =\n");
-    printf("Enter dividend (float):\n");
+    printf("[X] / [_] =\n");
+    printf("Введите числитель (вещественное):\n");
+    print_ruler();
 
     while(scanf_decimal_float(&a) != OK)
     {
         scanf_line();
-        printf("Invalid input\n\n");
-        printf("Enter dividend (float):\n");
+        printf("Неправильный ввод\n\n");
+        printf("Введите числитель (вещественное):\n");
+        print_ruler();
     }
 
     print_decimal_float(&a);
-    printf(" / [(int) X] =\n");
-    printf("Enter divider (int):\n");
+    printf(" / [X] =\n");
+    printf("Введите знаменталь (целое):\n");
+    print_ruler();
 
     while(scanf_decimal_int(&b) != OK)
     {
         scanf_line();
-        printf("Invalid input\n\n");
-        printf("Enter divider (int):\n");
+        printf("Неправильный ввод\n\n");
+        printf("Введите знаменталь (целое):\n");
+        print_ruler();
     }
 
     if (divide_decimal(&a, &b, &ans) != OK)
     {
-        printf("Error on division.\n");
+        printf("Ошибка деления\n\n");
         return EXIT_FAILURE;
     }
 
-    printf("Result:\n");
+    printf("Результат:\n");
 
     print_decimal_float(&a);
     printf(" / ");
