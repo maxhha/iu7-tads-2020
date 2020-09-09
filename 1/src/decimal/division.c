@@ -46,7 +46,7 @@ int divide_decimal(const t_decimal *dividend, const t_decimal *divider, t_decima
 
     quotient->exponent = dividend->exponent - divider->exponent;
     quotient->exponent += dividend->point - divider->point;
-    quotient->exponent += start_zeros;
+    quotient->exponent += start_zeros + 1;
 
     quotient->sign = dividend->sign * divider->sign;
 
@@ -144,22 +144,18 @@ int divide_decimal(const t_decimal *dividend, const t_decimal *divider, t_decima
     }
 
     // if dividend digits were less then divider digits in the first row
-    if (q_digits[0] == 0)
-    {
-        // shift back digits
-        for (int i = 0; i < MANTISSA_LEN + 1; i++)
-            q_digits[i] = q_digits[i + 1];
-    }
-    else
-        quotient->exponent += 1;
+    int shift = get_start_zeros_number(q_digits);
 
-    #ifdef DEBUG
-        printf("exponent = %d\n", quotient->exponent);
-    #endif
+    quotient->exponent -= shift;
 
-    if (abs(quotient->exponent) > MAX_EXPONENT)
-        return ERR;
+    // shift back digits
+    for (int i = 0; i + shift < QUOTIENT_DIGITS_LEN; i++)
+        q_digits[i] = q_digits[i + shift];
 
+    for (int i = QUOTIENT_DIGITS_LEN - shift; i <= MANTISSA_LEN; i++)
+        q_digits[i] = 0;
+
+    
     // round last digit
     if (q_digits[MANTISSA_LEN] >= 5)
     {
@@ -176,6 +172,16 @@ int divide_decimal(const t_decimal *dividend, const t_decimal *divider, t_decima
             }
         }
     }
+
+    if (get_start_zeros_number(q_digits) == MANTISSA_LEN)
+        quotient->exponent = 0;
+
+    #ifdef DEBUG
+        printf("exponent = %d\n", quotient->exponent);
+    #endif
+
+    if (abs(quotient->exponent) > MAX_EXPONENT)
+        return ERR;
 
     #ifdef DEBUG
         printf("\nResult digits:\n");

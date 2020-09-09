@@ -31,19 +31,6 @@ void print_ruler()
     printf("|--------|---------|---------|\n");
 }
 
-/*
-  Считывает с консоли строку до конца
-*/
-void scanf_line()
-{
-    char c;
-    do
-    {
-        if (scanf("%c", &c) != 1)
-            return;
-    } while (c != '\n');
-}
-
 int main()
 {
     t_decimal a;
@@ -52,29 +39,22 @@ int main()
 
     print_hello();
 
-    printf("[X] / [_] =\n");
     printf("Введите числитель (вещественное):\n");
     print_ruler();
 
-    while(scanf_decimal_float(&a) != OK)
+    if (scanf_decimal_float(&a) != OK)
     {
-        scanf_line();
-        printf("Неправильный ввод\n\n");
-        printf("Введите числитель (вещественное):\n");
-        print_ruler();
+        printf("Неправильный ввод\n");
+        return EXIT_FAILURE;
     }
 
-    print_decimal_float(&a);
-    printf(" / [X] =\n");
-    printf("Введите знаменталь (целое):\n");
+    printf("\nВведите знаменталь (целое):\n");
     print_ruler();
 
-    while(scanf_decimal_int(&b) != OK)
+    if (scanf_decimal_int(&b) != OK)
     {
-        scanf_line();
-        printf("Неправильный ввод\n\n");
-        printf("Введите знаменатель (целое):\n");
-        print_ruler();
+        printf("Неправильный ввод\n");
+        return EXIT_FAILURE;
     }
 
     if (divide_decimal(&a, &b, &ans) != OK)
@@ -83,12 +63,10 @@ int main()
         return EXIT_FAILURE;
     }
 
-    printf("Результат:\n");
-
     print_decimal_float(&a);
     printf(" / ");
     print_decimal_int(&b);
-    printf(" = ");
+    printf("\nРезультат:\n");
     print_decimal_float(&ans);
     printf("\n");
 

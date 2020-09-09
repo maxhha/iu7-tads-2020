@@ -82,7 +82,7 @@ int scanf_decimal_float(t_decimal *val)
             return ERR;
     }
 
-    if (!have_point && digit_n == 0)
+    if (have_point && digit_n == 0)
         return ERR;
 
     if (!have_point)
@@ -92,7 +92,7 @@ int scanf_decimal_float(t_decimal *val)
     {
         // read line to end
         while (c != '\n')
-            if (scanf("%c", &c) != 1 || c != ' ')
+            if (scanf("%c", &c) != 1 || (c != ' ' && c != '\n'))
                 return ERR;
         return OK;
     }
@@ -132,7 +132,7 @@ int scanf_decimal_float(t_decimal *val)
 
     // read line to end
     while (c != '\n')
-        if (scanf("%c", &c) != 1 || c != ' ')
+        if (scanf("%c", &c) != 1 || (c != ' ' && c != '\n'))
             return ERR;
 
     return OK;
@@ -197,7 +197,7 @@ int scanf_decimal_int(t_decimal *val)
 
     // read line to end
     while (c != '\n')
-        if (scanf("%c", &c) != 1 || c != ' ')
+        if (scanf("%c", &c) != 1 || (c != ' ' && c != '\n'))
             return ERR;
 
     val->point = (int) (digit_p - val->digits) / sizeof(t_digit);
