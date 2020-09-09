@@ -82,11 +82,20 @@ int scanf_decimal_float(t_decimal *val)
             return ERR;
     }
 
+    if (!have_point && digit_n == 0)
+        return ERR;
+
     if (!have_point)
         val->point = (int) (digit_p - val->digits) / sizeof(t_digit);
 
     if (!have_exp)
+    {
+        // read line to end
+        while (c != '\n')
+            if (scanf("%c", &c) != 1 || c != ' ')
+                return ERR;
         return OK;
+    }
 
     if (scanf("%c", &c) != 1)
         return ERR;
@@ -120,6 +129,11 @@ int scanf_decimal_float(t_decimal *val)
     }
 
     val->exponent *= exp_sign;
+
+    // read line to end
+    while (c != '\n')
+        if (scanf("%c", &c) != 1 || c != ' ')
+            return ERR;
 
     return OK;
 }
@@ -180,6 +194,11 @@ int scanf_decimal_int(t_decimal *val)
         else
             return ERR;
     }
+
+    // read line to end
+    while (c != '\n')
+        if (scanf("%c", &c) != 1 || c != ' ')
+            return ERR;
 
     val->point = (int) (digit_p - val->digits) / sizeof(t_digit);
 
