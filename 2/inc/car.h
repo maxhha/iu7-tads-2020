@@ -1,10 +1,7 @@
 #ifndef __CAR_H__
 #define __CAR_H__
 
-#include <stdlib.h>
-#include <stdio.h>
 #include <stdbool.h>
-#include "errors.h"
 
 #define CAR_BRAND_LEN 128
 #define CAR_COUNTRY_LEN 128
@@ -27,14 +24,12 @@ typedef union {
 } car_state_t;
 
 typedef struct {
-    char brand[CAR_BRAND_LEN];
-    char country[CAR_COUNTRY_LEN];
+    char brand[CAR_BRAND_LEN + 1];
+    char country[CAR_COUNTRY_LEN + 1];
     int price;
-    char color[CAR_COLOR_LEN];
+    char color[CAR_COLOR_LEN + 1];
     bool is_new;
     car_state_t state;
 } car_t;
-
-int read_car(FILE *fin, FILE *fout, car_t *car);
 
 #endif // __CAR_H__

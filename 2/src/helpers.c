@@ -1,0 +1,21 @@
+#include "../inc/helpers.h"
+
+/*
+    Работает как fgets, только не добавляет конец строки
+*/
+char *fgetline(char *dest, int maxlen, FILE *f)
+{
+    int c;
+    char *i = dest;
+    char *end = dest + maxlen - 1;
+
+    while(i < end && (c = fgetc(f)) != EOF && c != '\n')
+        *i++ = c;
+
+    if (c != EOF && c != '\n')
+        return NULL;
+
+    *i = '\0';
+
+    return c == EOF ? NULL : dest;
+}

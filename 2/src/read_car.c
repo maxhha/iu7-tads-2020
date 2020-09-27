@@ -1,29 +1,4 @@
-#include "../inc/car.h"
-
-/*
-    Делает fprintf если f не NULL
-*/
-#define xfprintf(f, ...) if (f) fprintf(f, __VA_ARGS__)
-
-/*
-    Работает как fgets, только не добавляет конец строки
-*/
-char *fgetline(char *dest, int maxlen, FILE *f)
-{
-    int c;
-    char *i = dest;
-    char *end = dest + maxlen - 1;
-
-    while(i < end && (c = fgetc(f)) != EOF && c != '\n')
-        *i++ = c;
-
-    if (c != EOF && c != '\n')
-        return NULL;
-
-    *i = '\0';
-
-    return c == EOF ? NULL : dest;
-}
+#include "../inc/read_car.h"
 
 /*
     Считывает из потока информацию о состоянии новой машины
@@ -63,17 +38,23 @@ int read_car_state_old(FILE *fin, FILE *fout, car_state_old_t *new_info)
 
     return OK;
 }
+
 /*
-    Заполняет поля car из fin. выводит приглашения в fout
+    Заполняет поля car из потока fin.
+    Пишет приглашения в fout если он не NULL
+
+    @param fin файл ввода
+    @param fout файл приглашений
+    @return код ошибки OK EREAD
 */
 int read_car(FILE *fin, FILE *fout, car_t *car)
 {
     xfprintf(fout, "Марка:\n");
-    if (fgetline(car->brand, CAR_BRAND_LEN, fin) == NULL)
+    if (fgetline(car->brand, CAR_BRAND_LEN + 1, fin) == NULL)
         return EREAD;
 
     xfprintf(fout, "Страна-производитель:\n");
-    if (fgetline(car->country, CAR_COUNTRY_LEN, fin) == NULL)
+    if (fgetline(car->country, CAR_COUNTRY_LEN + 1, fin) == NULL)
         return EREAD;
 
     xfprintf(fout, "Цена:\n");
@@ -81,7 +62,7 @@ int read_car(FILE *fin, FILE *fout, car_t *car)
         return EREAD;
 
     xfprintf(fout, "Цвет:\n");
-    if (fgetline(car->country, CAR_COLOR_LEN, fin) == NULL)
+    if (fgetline(car->country, CAR_COLOR_LEN + 1, fin) == NULL)
         return EREAD;
 
     xfprintf(fout, "Состояние (0 - старая, 1 - новая):\n");
