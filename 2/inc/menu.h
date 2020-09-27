@@ -14,8 +14,11 @@
 #define MENU_ACTION_LIST "ls"
 #define MENU_ACTION_ADD "add"
 #define MENU_ACTION_REMOVE "rm"
+#define MENU_ACTION_SAVE "save"
+#define MENU_ACTION_LOAD "load"
 #define MENU_ACTION_QUIT "q"
-#define MENU_ACTION_LEN 4
+#define MENU_ACTION_LEN 5
+#define FILE_NAME_LEN 128
 
 int run_menu(car_t **car_table);
 

@@ -5,7 +5,7 @@
 #define vec_push(a,v)       (vec__maybegrow(a,1), (a)[vec__n(a)++] = (v))
 #define vec_remove(a,i)     ((a) ? vec__remove((a), (i), sizeof(*(a))) : 0)
 #define vec_count(a)        ((a) ? vec__n(a) : 0)
-#define vec_add(a,n)        (vec__maybegrow(a,n), vec__n(a)+=(n), &(a)[vec__n(a)-(n)])
+#define vec_add(a,n)        (vec__maybegrow(a,n), vec__n(a)+=(n))
 #define vec_last(a)         ((a)[vec__n(a)-1])
 
 #define vec__raw(a) ((int *) (void *) (a) - 2)
