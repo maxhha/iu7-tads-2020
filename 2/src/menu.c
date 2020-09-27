@@ -12,6 +12,7 @@ void print_menu(void)
 
 int menu_action_list(car_t **car_table)
 {
+    printf("\n");
     if (vec_count(*car_table) == 0)
     {
         printf("В таблице нет данных.\n");
@@ -28,6 +29,8 @@ int menu_action_list(car_t **car_table)
 int menu_action_add(car_t **car_table)
 {
     car_t car;
+    
+    printf("\n");
     if (read_car(stdin, stdout, &car) != OK)
     {
         printf("Неправильный ввод.\n");
@@ -36,7 +39,7 @@ int menu_action_add(car_t **car_table)
 
     vec_push(*car_table, car);
 
-    printf("Добавлена #%d\n", vec_count(*car_table) - 1);
+    printf("\nДобавлена #%d\n", vec_count(*car_table));
 
     return OK;
 }
