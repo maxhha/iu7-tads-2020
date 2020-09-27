@@ -19,3 +19,12 @@ char *fgetline(char *dest, int maxlen, FILE *f)
 
     return c == EOF ? NULL : dest;
 }
+
+
+void wait_new_line(void)
+{
+    int c;
+    do {
+        c = getchar();
+    } while (c != EOF && c != '\n');
+}

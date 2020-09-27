@@ -123,13 +123,13 @@ void print_car_table_row_state_old(const car_state_old_t *info)
 */
 void print_car_table_row(const size_t index, const car_t *car)
 {
-    printf("| %*lu", TABLE_COL_SIZE_INDEX, index);
+    printf("| %*lu", TABLE_COL_SIZE_INDEX, index + 1);
 
     printf(" | %-*s", TABLE_COL_SIZE_BRAND, car->brand);
 
     printf(" | %-*s", TABLE_COL_SIZE_COUNTRY, car->country);
 
-    printf(" | %*d", TABLE_COL_SIZE_PRICE, car->price);
+    printf(" | %*ld", TABLE_COL_SIZE_PRICE, car->price);
 
     printf(" | %-*s", TABLE_COL_SIZE_COLOR, car->color);
 

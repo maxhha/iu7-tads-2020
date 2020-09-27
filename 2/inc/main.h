@@ -4,10 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "helpers.h"
-#include "errors.h"
-#include "car.h"
-#include "read_car.h"
-#include "print_car.h"
+#include "menu.h"
+#include "vec.h"
 
 #endif // __MAIN_H__

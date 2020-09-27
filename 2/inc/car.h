@@ -26,7 +26,7 @@ typedef union {
 typedef struct {
     char brand[CAR_BRAND_LEN + 1];
     char country[CAR_COUNTRY_LEN + 1];
-    int price;
+    long int price;
     char color[CAR_COLOR_LEN + 1];
     bool is_new;
     car_state_t state;

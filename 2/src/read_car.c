@@ -49,6 +49,8 @@ int read_car_state_old(FILE *fin, FILE *fout, car_state_old_t *new_info)
 */
 int read_car(FILE *fin, FILE *fout, car_t *car)
 {
+    char c;
+
     xfprintf(fout, "Марка:\n");
     if (fgetline(car->brand, CAR_BRAND_LEN + 1, fin) == NULL)
         return EREAD;
@@ -58,11 +60,14 @@ int read_car(FILE *fin, FILE *fout, car_t *car)
         return EREAD;
 
     xfprintf(fout, "Цена:\n");
-    if (fscanf(fin, "%d", &car->price) != 1 || car->price < 0)
+    if (fscanf(fin, "%ld%c", &car->price, &c) != 2 || car->price < 0)
         return EREAD;
 
+    if (c != '\n')
+        wait_new_line();
+
     xfprintf(fout, "Цвет:\n");
-    if (fgetline(car->country, CAR_COLOR_LEN + 1, fin) == NULL)
+    if (fgetline(car->color, CAR_COLOR_LEN + 1, fin) == NULL)
         return EREAD;
 
     xfprintf(fout, "Состояние (0 - старая, 1 - новая):\n");
@@ -79,6 +84,12 @@ int read_car(FILE *fin, FILE *fout, car_t *car)
         if (read_car_state_old(fin, fout, &car->state.old_info) != OK)
             return EREAD;
     }
+
+    if (fscanf(fin, "%c", &c) != 1)
+        return OK;
+
+    if (c != '\n')
+        wait_new_line();
 
     return OK;
 }
