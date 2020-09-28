@@ -4,12 +4,12 @@ void print_menu(void)
 {
     printf("\n");
     printf("Действия:\n");
-    printf("%*s - вывести всю таблицу\n", MENU_ACTION_LEN, MENU_ACTION_LIST);
-    printf("%*s - добавить запись\n", MENU_ACTION_LEN, MENU_ACTION_ADD);
-    printf("%*s - удалить запись\n", MENU_ACTION_LEN, MENU_ACTION_REMOVE);
-    printf("%*s - сохранить в файл\n", MENU_ACTION_LEN, MENU_ACTION_SAVE);
-    printf("%*s - загрузить из файла\n", MENU_ACTION_LEN, MENU_ACTION_LOAD);
-    printf("%*s - выйти\n", MENU_ACTION_LEN, MENU_ACTION_QUIT);
+    printf("%*s " YEL "- вывести всю таблицу\n" RESET, MENU_ACTION_LEN, MENU_ACTION_LIST);
+    printf("%*s " YEL "- добавить запись\n" RESET, MENU_ACTION_LEN, MENU_ACTION_ADD);
+    printf("%*s " YEL "- удалить запись\n" RESET, MENU_ACTION_LEN, MENU_ACTION_REMOVE);
+    printf("%*s " YEL "- сохранить в файл\n" RESET, MENU_ACTION_LEN, MENU_ACTION_SAVE);
+    printf("%*s " YEL "- загрузить из файла\n" RESET, MENU_ACTION_LEN, MENU_ACTION_LOAD);
+    printf("%*s " YEL "- выйти\n" RESET, MENU_ACTION_LEN, MENU_ACTION_QUIT);
 }
 
 int menu_action_list(car_t **car_table)
@@ -17,7 +17,7 @@ int menu_action_list(car_t **car_table)
     printf("\n");
     if (vec_count(*car_table) == 0)
     {
-        printf("В таблице нет данных.\n");
+        printf(RED "В таблице нет данных.\n" RESET);
         return OK;
     }
 
@@ -35,13 +35,15 @@ int menu_action_add(car_t **car_table)
     printf("\n");
     if (read_car(stdin, stdout, &car) != OK)
     {
-        printf("Неправильный ввод.\n");
+        printf(RED "Неправильный ввод.\n" RESET);
         return OK;
     }
 
     vec_push(*car_table, car);
 
-    printf("\nДобавлена #%d\n", vec_count(*car_table));
+    printf(GRN "\nДобавлена:\n" RESET);
+    print_car_table_header();
+    print_car_table_row(vec_count(*car_table) - 1, &car);
 
     return OK;
 }
@@ -52,17 +54,20 @@ int menu_action_remove(car_t **car_table)
     printf("Введите номер автомобиля:\n");
     if (scanf("%d", &i) != 1)
     {
-        printf("Неправильный ввод.\n");
+        printf(RED "Неправильный ввод.\n" RESET);
         return OK;
     }
+    wait_new_line();
+
     if (i < 1 || i > vec_count(*car_table))
     {
-        printf("Неправильный номер.\n");
+        printf(RED "Неправильный номер.\n" RESET);
         return OK;
     }
     i--;
 
-    printf("Удалили:\n");
+    printf(GRN "Удалили:\n" RESET);
+    print_car_table_header();
     print_car_table_row(i, *car_table + i);
 
     vec_remove(*car_table, i);
@@ -77,14 +82,14 @@ int menu_action_save(car_t **car_table)
 
     if (fgetline(s, FILE_NAME_LEN + 1, stdin) == NULL)
     {
-        printf("Слишком длинное название.\n");
+        printf(RED "Слишком длинное название.\n" RESET);
         return OK;
     }
 
     FILE *f = fopen(s, "wb");
     if (f == NULL)
     {
-        printf("Ошибка открытия файла.\n");
+        printf(RED "Ошибка открытия файла.\n" RESET);
         return EWRITE;
     }
 
@@ -92,7 +97,7 @@ int menu_action_save(car_t **car_table)
 
     fclose(f);
 
-    printf("\nСохранено %d строк.\n", vec_count(*car_table));
+    printf(GRN "\nСохранено %d строк.\n" RESET, vec_count(*car_table));
 
     return OK;
 }
@@ -104,14 +109,14 @@ int menu_action_load(car_t **car_table)
 
     if (fgetline(s, FILE_NAME_LEN + 1, stdin) == NULL)
     {
-        printf("Слишком длинное название.\n");
+        printf(RED "Слишком длинное название.\n" RESET);
         return OK;
     }
 
     FILE *f = fopen(s, "rb");
     if (f == NULL)
     {
-        printf("Файл не найден.\n");
+        printf(RED "Файл не найден.\n" RESET);
         return OK;
     }
 
@@ -120,7 +125,7 @@ int menu_action_load(car_t **car_table)
 
     if (filesize < 0 || filesize % sizeof(car_t) != 0)
     {
-        printf("Неправильный размер файла.\n");
+        printf(RED "Неправильный размер файла.\n" RESET);
         return OK;
     }
 
@@ -136,7 +141,7 @@ int menu_action_load(car_t **car_table)
 
     fclose(f);
 
-    printf("\nЗагружено %ld строк.\n", filesize);
+    printf(GRN "\nЗагружено %ld строк.\n" RESET, filesize);
 
     return OK;
 }
@@ -154,7 +159,7 @@ int run_menu(car_t **car_table)
 
         if (fgetline(action, MENU_ACTION_LEN + 1, stdin) == NULL)
         {
-            printf("Неправильный ввод.\n");
+            printf(RED "Неправильный ввод.\n" RESET);
             *action = '\0';
             wait_new_line();
             if (feof(stdin))
@@ -172,7 +177,7 @@ int run_menu(car_t **car_table)
             rc = menu_action_load(car_table);
         else if (strcmp(action, MENU_ACTION_QUIT) != 0)
         {
-            printf("Неправильный ввод.\n");
+            printf(RED "Неправильный ввод.\n" RESET);
             if (feof(stdin))
                 rc = EOF;
         }
