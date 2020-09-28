@@ -9,7 +9,7 @@ char *fgetline(char *dest, int maxlen, FILE *f)
     char *i = dest;
     char *end = dest + maxlen - 1;
 
-    while(i < end && (c = fgetc(f)) != EOF && c != '\n')
+    while((c = fgetc(f)) != EOF && c != '\n' && i < end)
         *i++ = c;
 
     if (c != EOF && c != '\n')

@@ -1,13 +1,9 @@
 #include "../inc/print_car.h"
 
 /*
-    Выводит символ n раз
+    Выводит строку n раз
 */
-void print_repeat(const char c, const int n)
-{
-    for(int i = 0; i < n; i++)
-        printf("%c", c);
-}
+#define print_repeat(c, n) do { for(int i = 0; i < n; i++) printf(c); } while(0)
 
 /*
     Выводит шапку таблицы машин
@@ -16,72 +12,72 @@ void print_car_table_header(void)
 {
 
     printf(GRN "|" RESET " #");
-    print_repeat(' ', TABLE_COL_SIZE_INDEX - 1);
+    print_repeat(" ", TABLE_COL_SIZE_INDEX - 1);
 
     printf(GRN " | " RESET "Марка");
-    print_repeat(' ', TABLE_COL_SIZE_BRAND - 5);
+    print_repeat(" ", TABLE_COL_SIZE_BRAND - 5);
 
     printf(GRN " | " RESET "Страна");
-    print_repeat(' ', TABLE_COL_SIZE_COUNTRY - 6);
+    print_repeat(" ", TABLE_COL_SIZE_COUNTRY - 6);
 
     printf(GRN " | " RESET "Цена");
-    print_repeat(' ', TABLE_COL_SIZE_PRICE - 4);
+    print_repeat(" ", TABLE_COL_SIZE_PRICE - 4);
 
     printf(GRN " | " RESET "Цвет");
-    print_repeat(' ', TABLE_COL_SIZE_COLOR - 4);
+    print_repeat(" ", TABLE_COL_SIZE_COLOR - 4);
 
     printf(GRN " | " RESET "Состояние");
-    print_repeat(' ', TABLE_COL_SIZE_STATE - 9);
+    print_repeat(" ", TABLE_COL_SIZE_STATE - 9);
 
     printf(GRN " | " RESET "Гарантия");
-    print_repeat(' ', TABLE_COL_SIZE_GUARANTEE - 8);
+    print_repeat(" ", TABLE_COL_SIZE_GUARANTEE - 8);
 
     printf(GRN " | " RESET "Выпуск");
-    print_repeat(' ', TABLE_COL_SIZE_YEAR - 6);
+    print_repeat(" ", TABLE_COL_SIZE_YEAR - 6);
 
     printf(GRN " | " RESET "Пробег");
-    print_repeat(' ', TABLE_COL_SIZE_MILEAGE - 6);
+    print_repeat(" ", TABLE_COL_SIZE_MILEAGE - 6);
 
     printf(GRN " | " RESET "Ремонтов");
-    print_repeat(' ', TABLE_COL_SIZE_REPAIRS_N - 8);
+    print_repeat(" ", TABLE_COL_SIZE_REPAIRS_N - 8);
 
     printf(GRN " | " RESET "Собственников");
-    print_repeat(' ', TABLE_COL_SIZE_OWNERS_N - 13);
+    print_repeat(" ", TABLE_COL_SIZE_OWNERS_N - 13);
 
     printf(GRN " |\n" RESET);
 
     printf(GRN "| " YEL);
-    print_repeat('-', TABLE_COL_SIZE_INDEX);
+    print_repeat("-", TABLE_COL_SIZE_INDEX);
 
     printf(GRN " | " YEL);
-    print_repeat('-', TABLE_COL_SIZE_BRAND);
+    print_repeat("-", TABLE_COL_SIZE_BRAND);
 
     printf(GRN " | " YEL);
-    print_repeat('-', TABLE_COL_SIZE_COUNTRY);
+    print_repeat("-", TABLE_COL_SIZE_COUNTRY);
 
     printf(GRN " | " YEL);
-    print_repeat('-', TABLE_COL_SIZE_PRICE);
+    print_repeat("-", TABLE_COL_SIZE_PRICE);
 
     printf(GRN " | " YEL);
-    print_repeat('-', TABLE_COL_SIZE_COLOR);
+    print_repeat("-", TABLE_COL_SIZE_COLOR);
 
     printf(GRN " | " YEL);
-    print_repeat('-', TABLE_COL_SIZE_STATE);
+    print_repeat("-", TABLE_COL_SIZE_STATE);
 
     printf(GRN " | " YEL);
-    print_repeat('-', TABLE_COL_SIZE_GUARANTEE);
+    print_repeat("-", TABLE_COL_SIZE_GUARANTEE);
 
     printf(GRN " | " YEL);
-    print_repeat('-', TABLE_COL_SIZE_YEAR);
+    print_repeat("-", TABLE_COL_SIZE_YEAR);
 
     printf(GRN " | " YEL);
-    print_repeat('-', TABLE_COL_SIZE_MILEAGE);
+    print_repeat("-", TABLE_COL_SIZE_MILEAGE);
 
     printf(GRN " | " YEL);
-    print_repeat('-', TABLE_COL_SIZE_REPAIRS_N);
+    print_repeat("-", TABLE_COL_SIZE_REPAIRS_N);
 
     printf(GRN " | " YEL);
-    print_repeat('-', TABLE_COL_SIZE_OWNERS_N);
+    print_repeat("-", TABLE_COL_SIZE_OWNERS_N);
 
     printf(GRN " |\n" RESET);
 }
