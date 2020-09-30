@@ -36,7 +36,7 @@ int divide_decimal(const t_decimal *dividend, const t_decimal *divider, t_decima
     int start_zeros = get_start_zeros_number(divider->digits);
 
     if (start_zeros == MANTISSA_LEN)
-        return ERR;
+        return EZERODIVISION;
 
     memcpy(
         divider_digits,
@@ -155,7 +155,7 @@ int divide_decimal(const t_decimal *dividend, const t_decimal *divider, t_decima
     for (int i = QUOTIENT_DIGITS_LEN - shift; i <= MANTISSA_LEN; i++)
         q_digits[i] = 0;
 
-    
+
     // round last digit
     if (q_digits[MANTISSA_LEN] >= 5)
     {
@@ -181,7 +181,7 @@ int divide_decimal(const t_decimal *dividend, const t_decimal *divider, t_decima
     #endif
 
     if (abs(quotient->exponent) > MAX_EXPONENT)
-        return ERR;
+        return EEXPOVERFLOW;
 
     #ifdef DEBUG
         printf("\nResult digits:\n");

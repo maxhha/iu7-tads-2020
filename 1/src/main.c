@@ -17,8 +17,18 @@ void print_hello()
     printf("*                            *\n");
     printf("******************************\n");
     printf("\n");
-    printf("Примеры:\n");
+    printf("Примеры ввода целого числа:\n");
+    printf("10\n");
+    printf("  +2\n");
+    printf("-007\n");
+    printf("+999999999999999999999999999999\n");
     printf("\n");
+    printf("Примеры ввода вещественного числа\n");
+    printf("<все примеры ввода целого числа>\n");
+    printf(".2\n");
+    printf("-.5600E20\n");
+    printf("  +1.e-23\n");
+    printf("+.999999999999999999999999999999E+99999\n");
     printf("\n");
 }
 
@@ -57,7 +67,19 @@ int main()
         return EXIT_FAILURE;
     }
 
-    if (divide_decimal(&a, &b, &ans) != OK)
+    int rc = divide_decimal(&a, &b, &ans);
+
+    if (rc == EZERODIVISION)
+    {
+        printf("Ошибка деления на 0\n\n");
+        return EXIT_FAILURE;
+    }
+    if (rc == EEXPOVERFLOW)
+    {
+        printf("Ошибка переполнения порядка\n\n");
+        return EXIT_FAILURE;
+    }
+    else if (rc != OK)
     {
         printf("Ошибка деления\n\n");
         return EXIT_FAILURE;
