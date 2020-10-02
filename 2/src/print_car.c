@@ -147,3 +147,38 @@ void print_car_table_row(const size_t index, const car_t *car)
 
     printf(_I_n);
 }
+
+/*
+    Выводит шапку таблицы ключей машин
+*/
+void print_car_key_table_header(void)
+{
+
+    printf(I_ "#");
+    print_repeat(" ", TABLE_COL_SIZE_INDEX - 1);
+
+    printf(_I_ "Цена");
+    print_repeat(" ", TABLE_COL_SIZE_PRICE - 4);
+
+    printf(_I_n);
+
+    printf(I_);
+    print_repeat("-", TABLE_COL_SIZE_INDEX);
+
+    printf(_I_ YEL);
+    print_repeat("-", TABLE_COL_SIZE_PRICE);
+
+    printf(_I_n);
+}
+
+/*
+    Выводит строку таблицы ключей
+*/
+void print_car_key_table_row(const car_key_t *key)
+{
+    printf(GRN "| " RESET "%*lu", TABLE_COL_SIZE_INDEX, key->index + 1);
+
+    printf(_I_ "%*ld", TABLE_COL_SIZE_PRICE, key->price);
+
+    printf(_I_n);
+}

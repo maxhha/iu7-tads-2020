@@ -1,6 +1,7 @@
 #ifndef __CAR_H__
 #define __CAR_H__
 
+#include <stdlib.h>
 #include <stdbool.h>
 
 #define CAR_BRAND_LEN 128
@@ -31,5 +32,10 @@ typedef struct {
     bool is_new;
     car_state_t state;
 } car_t;
+
+typedef struct {
+    size_t index;
+    long int price;
+} car_key_t;
 
 #endif // __CAR_H__

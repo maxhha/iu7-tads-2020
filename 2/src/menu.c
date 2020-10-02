@@ -16,7 +16,7 @@ void print_menu(void)
     printf("\t%*s " YEL "- таблицу данных, пирамидальная\n" RESET, MENU_ACTION_LEN, MENU_ACTION_SORT_TABLE_HEAPSORT);
     printf("\t%*s " YEL "- таблицу ключей, пузырьком\n" RESET, MENU_ACTION_LEN, MENU_ACTION_SORT_KEY_BUBBLE);
     printf("\t%*s " YEL "- таблицу ключей, пирамидальная,\n" RESET, MENU_ACTION_LEN, MENU_ACTION_SORT_KEY_HEAPSORT);
-    printf("\t%*s " YEL "- и сравнить все способы\n" RESET, MENU_ACTION_LEN, MENU_ACTION_SORT_ALL);
+    printf("\t%*s " YEL "- сравнить все способы\n" RESET, MENU_ACTION_LEN, MENU_ACTION_SORT_ALL);
     printf("\n");
 }
 
@@ -167,6 +167,11 @@ int compare_cars_by_price(const void *car_a, const void *car_b)
     return ((const car_t *) car_a)->price - ((const car_t *) car_b)->price;
 }
 
+int compare_car_keys_by_price(const void *car_a, const void *car_b)
+{
+    return ((const car_key_t *) car_a)->price - ((const car_key_t *) car_b)->price;
+}
+
 typedef void (*sort_func_t)(void *, size_t, size_t, cmp_func_t);
 
 double menu_action_sort_table(car_t *car_table, size_t *car_table_size, sort_func_t sort, bool show)
@@ -190,6 +195,32 @@ double menu_action_sort_table(car_t *car_table, size_t *car_table_size, sort_fun
         print_car_table_header();
         for (int i = 0; i < cars_count; i++)
             print_car_table_row(i, car_table2 + i);
+    }
+
+    return time;
+}
+
+double menu_action_sort_key_table(car_key_t *car_table, size_t *car_table_size, sort_func_t sort, bool show)
+{
+    size_t cars_count = *car_table_size;
+    car_key_t car_table2[MAX_TABLE_SIZE];
+
+    memcpy(car_table2, car_table, cars_count*sizeof(*car_table));
+
+    clock_t start, stop;
+    start = clock();
+
+    (*sort) (car_table2, cars_count, sizeof(*car_table2), compare_car_keys_by_price);
+
+    stop = clock();
+
+    double time = (double) (stop - start) / CLOCKS_PER_SEC * MICROSEC_PER_SEC;
+
+    if (show)
+    {
+        print_car_key_table_header();
+        for (int i = 0; i < cars_count; i++)
+            print_car_key_table_row(car_table2 + i);
     }
 
     return time;
@@ -247,6 +278,74 @@ int menu_action_sort_table_heapsort(car_t *car_table, size_t *car_table_size)
     return OK;
 }
 
+int menu_action_sort_key_bubble(car_t *car_table, size_t *car_table_size)
+{
+    car_key_t car_keys[MAX_TABLE_SIZE];
+
+    for (size_t i = 0; i < *car_table_size; i++)
+    {
+        car_keys[i].index = i;
+        car_keys[i].price = car_table[i].price;
+    }
+
+    double time = 0;
+
+    if (*car_table_size == 0)
+    {
+        printf(RED "Таблица пустая.\n" RESET);
+        return OK;
+    }
+
+    for (int i = 1; i <= TIME_MEASURE_REPEATS; i++)
+    {
+        time += menu_action_sort_key_table(car_keys, car_table_size, bsort, false);
+        printf("\r%5d из %5d", i, TIME_MEASURE_REPEATS);
+    }
+    printf("\n");
+
+    time /= TIME_MEASURE_REPEATS;
+
+    menu_action_sort_key_table(car_keys, car_table_size, bsort, true);
+
+    printf(YEL "Сортировка таблицы ключей пузырьком:" RESET " %12.0lfms\n", time);
+
+    return OK;
+}
+
+int menu_action_sort_key_heapsort(car_t *car_table, size_t *car_table_size)
+{
+    car_key_t car_keys[MAX_TABLE_SIZE];
+
+    for (size_t i = 0; i < *car_table_size; i++)
+    {
+        car_keys[i].index = i;
+        car_keys[i].price = car_table[i].price;
+    }
+
+    double time;
+
+    if (*car_table_size == 0)
+    {
+        printf(RED "Таблица пустая.\n" RESET);
+        return OK;
+    }
+
+    for (int i = 1; i <= TIME_MEASURE_REPEATS; i++)
+    {
+        time += menu_action_sort_key_table(car_keys, car_table_size, hsort, false);
+        printf("\r%5d из %5d", i, TIME_MEASURE_REPEATS);
+    }
+    printf("\n");
+
+    time /= TIME_MEASURE_REPEATS;
+
+    menu_action_sort_key_table(car_keys, car_table_size, hsort, true);
+
+    printf(YEL "Пирамидальная сортировка таблицы ключей:" RESET " %12.0lfms\n", time);
+
+    return OK;
+}
+
 int run_menu(car_t *car_table, size_t *car_table_size)
 {
     char action[MENU_ACTION_LEN + 1] = "";
@@ -279,6 +378,10 @@ int run_menu(car_t *car_table, size_t *car_table_size)
             rc = menu_action_sort_table_bubble(car_table, car_table_size);
         else if (strcmp(action, MENU_ACTION_SORT_TABLE_HEAPSORT) == 0)
             rc = menu_action_sort_table_heapsort(car_table, car_table_size);
+        else if (strcmp(action, MENU_ACTION_SORT_KEY_BUBBLE) == 0)
+            rc = menu_action_sort_key_bubble(car_table, car_table_size);
+        else if (strcmp(action, MENU_ACTION_SORT_KEY_HEAPSORT) == 0)
+            rc = menu_action_sort_key_heapsort(car_table, car_table_size);
         else if (strcmp(action, MENU_ACTION_QUIT) != 0)
         {
             printf("\n" RED "Неправильный ввод.\n" RESET);

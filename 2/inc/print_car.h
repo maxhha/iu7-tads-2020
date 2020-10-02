@@ -23,5 +23,7 @@
 
 void print_car_table_header(void);
 void print_car_table_row(const size_t index, const car_t *car);
+void print_car_key_table_header(void);
+void print_car_key_table_row(const car_key_t *key);
 
 #endif // __PRINT_CAR_H__
