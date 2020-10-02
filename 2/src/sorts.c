@@ -25,26 +25,68 @@ void bsort(void *array, size_t n, size_t size, cmp_func_t cmp)
 
 void hsort(void *array, size_t n, size_t size, cmp_func_t cmp)
 {
-    if (array == NULL || n < 2 || size == 0 || cmp == NULL)
-        return;
-
     char *base = (char *) array;
-    size_t gap = (n * 10 / 13);
-    while (gap)
+    char *end = base + n * size;
+
+    // Build heap (rearrange array)
+    for (size_t i = n / 2 * size; i > 0; i -= size)
     {
-        if (gap > 8 && gap < 11)
-            gap = 11;
-        size_t swapped = 0;
-        char *end = base + (n - gap) * size;
-        char *j;
-        for (char *i = base; i < end; i += size)
-            if ((*cmp) ((void *) i, (void *) (j = i + size*gap)) > 0)
-            {
-                SWAP(i, j, size);
-                swapped = 1;
-            }
-        gap = (gap * 10 / 13);
-        if (gap == 0)
-            gap = swapped;
+        size_t j = i - size;
+        char *root = base + j;
+        char *largest = root; // Initialize largest as root
+        char *l = base + 2 * j + size; // left = 2*i + 1
+        char *r = base + 2 * j + 2 * size; // right = 2*i + 2
+
+        for(;;)
+        {
+            // If left child is larger than root
+            if (l < end && (*cmp) ((void *) l, (void *) (largest)) > 0)
+            largest = l;
+
+            // If right child is larger than largest so far
+            if (r < end && (*cmp) ((void *) r, (void *) (largest)) > 0)
+            largest = r;
+
+            // If largest is not root
+            if (largest == root)
+                break;
+            SWAP(root, largest, size);
+
+            root = largest;
+            l = base + 2 * (root - base) + size;
+            r = base + 2 * (root - base) + 2 * size;
+        }
+    }
+
+    // One by one extract an element from heap
+    for (end -= size; end > base; end -= size)
+    {
+        // Move current root to end
+        SWAP(base, end, size);
+
+        // call max heapify on the reduced heap
+        char *root = base;
+        char *largest = root; // Initialize largest as root
+        char *l = base + size; // left = 2*i + 1
+        char *r = base + 2 * size; // right = 2*i + 2
+
+        for(;;)
+        {
+            // If left child is larger than root
+            if (l < end && (*cmp) ((void *) l, (void *) (largest)) > 0)
+                largest = l;
+
+            // If right child is larger than largest so far
+            if (r < end && (*cmp) ((void *) r, (void *) (largest)) > 0)
+                largest = r;
+
+            // If largest is not root
+            if (largest == root)
+                break;
+            SWAP(root, largest, size);
+            root = largest;
+            l = base + 2 * (root - base) + size;
+            r = base + 2 * (root - base) + 2 * size;
+        }
     }
 }

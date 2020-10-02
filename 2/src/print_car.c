@@ -1,4 +1,9 @@
 #include "../inc/print_car.h"
+#define I GRN "|" RESET
+#define _I " " I
+#define I_ I " "
+#define _I_ " " I " "
+#define _I_n _I_ "\n"
 
 /*
     Выводит строку n раз
@@ -11,75 +16,75 @@
 void print_car_table_header(void)
 {
 
-    printf(GRN "|" RESET " #");
+    printf(I_ "#");
     print_repeat(" ", TABLE_COL_SIZE_INDEX - 1);
 
-    printf(GRN " | " RESET "Марка");
+    printf(_I_ "Марка");
     print_repeat(" ", TABLE_COL_SIZE_BRAND - 5);
 
-    printf(GRN " | " RESET "Страна");
+    printf(_I_ "Страна");
     print_repeat(" ", TABLE_COL_SIZE_COUNTRY - 6);
 
-    printf(GRN " | " RESET "Цена");
+    printf(_I_ "Цена");
     print_repeat(" ", TABLE_COL_SIZE_PRICE - 4);
 
-    printf(GRN " | " RESET "Цвет");
+    printf(_I_ "Цвет");
     print_repeat(" ", TABLE_COL_SIZE_COLOR - 4);
 
-    printf(GRN " | " RESET "Состояние");
+    printf(_I_ "Состояние");
     print_repeat(" ", TABLE_COL_SIZE_STATE - 9);
 
-    printf(GRN " | " RESET "Гарантия");
+    printf(_I_ "Гарантия");
     print_repeat(" ", TABLE_COL_SIZE_GUARANTEE - 8);
 
-    printf(GRN " | " RESET "Выпуск");
+    printf(_I_ "Выпуск");
     print_repeat(" ", TABLE_COL_SIZE_YEAR - 6);
 
-    printf(GRN " | " RESET "Пробег");
+    printf(_I_ "Пробег");
     print_repeat(" ", TABLE_COL_SIZE_MILEAGE - 6);
 
-    printf(GRN " | " RESET "Ремонтов");
+    printf(_I_ "Ремонтов");
     print_repeat(" ", TABLE_COL_SIZE_REPAIRS_N - 8);
 
-    printf(GRN " | " RESET "Собственников");
+    printf(_I_ "Собственников");
     print_repeat(" ", TABLE_COL_SIZE_OWNERS_N - 13);
 
-    printf(GRN " |\n" RESET);
+    printf(_I_n);
 
-    printf(GRN "| " YEL);
+    printf(I_);
     print_repeat("-", TABLE_COL_SIZE_INDEX);
 
-    printf(GRN " | " YEL);
+    printf(_I_ YEL);
     print_repeat("-", TABLE_COL_SIZE_BRAND);
 
-    printf(GRN " | " YEL);
+    printf(_I_ YEL);
     print_repeat("-", TABLE_COL_SIZE_COUNTRY);
 
-    printf(GRN " | " YEL);
+    printf(_I_ YEL);
     print_repeat("-", TABLE_COL_SIZE_PRICE);
 
-    printf(GRN " | " YEL);
+    printf(_I_ YEL);
     print_repeat("-", TABLE_COL_SIZE_COLOR);
 
-    printf(GRN " | " YEL);
+    printf(_I_ YEL);
     print_repeat("-", TABLE_COL_SIZE_STATE);
 
-    printf(GRN " | " YEL);
+    printf(_I_ YEL);
     print_repeat("-", TABLE_COL_SIZE_GUARANTEE);
 
-    printf(GRN " | " YEL);
+    printf(_I_ YEL);
     print_repeat("-", TABLE_COL_SIZE_YEAR);
 
-    printf(GRN " | " YEL);
+    printf(_I_ YEL);
     print_repeat("-", TABLE_COL_SIZE_MILEAGE);
 
-    printf(GRN " | " YEL);
+    printf(_I_ YEL);
     print_repeat("-", TABLE_COL_SIZE_REPAIRS_N);
 
-    printf(GRN " | " YEL);
+    printf(_I_ YEL);
     print_repeat("-", TABLE_COL_SIZE_OWNERS_N);
 
-    printf(GRN " |\n" RESET);
+    printf(_I_n);
 }
 
 /*
@@ -87,15 +92,15 @@ void print_car_table_header(void)
 */
 void print_car_table_row_state_new(const car_state_new_t *info)
 {
-    printf(GRN " | " RESET "%*d", TABLE_COL_SIZE_GUARANTEE, info->guarantee);
+    printf(_I_ "%*d", TABLE_COL_SIZE_GUARANTEE, info->guarantee);
 
-    printf(GRN " | " RESET "%*s", TABLE_COL_SIZE_YEAR, "-");
+    printf(_I_ "%*s", TABLE_COL_SIZE_YEAR, "-");
 
-    printf(GRN " | " RESET "%*s", TABLE_COL_SIZE_MILEAGE, "-");
+    printf(_I_ "%*s", TABLE_COL_SIZE_MILEAGE, "-");
 
-    printf(GRN " | " RESET "%*s", TABLE_COL_SIZE_REPAIRS_N, "-");
+    printf(_I_ "%*s", TABLE_COL_SIZE_REPAIRS_N, "-");
 
-    printf(GRN " | " RESET "%*s", TABLE_COL_SIZE_OWNERS_N, "-");
+    printf(_I_ "%*s", TABLE_COL_SIZE_OWNERS_N, "-");
 }
 
 /*
@@ -103,15 +108,15 @@ void print_car_table_row_state_new(const car_state_new_t *info)
 */
 void print_car_table_row_state_old(const car_state_old_t *info)
 {
-    printf(GRN " | " RESET "%*s", TABLE_COL_SIZE_GUARANTEE, "-");
+    printf(_I_ "%*s", TABLE_COL_SIZE_GUARANTEE, "-");
 
-    printf(GRN " | " RESET "%*d", TABLE_COL_SIZE_YEAR, info->year);
+    printf(_I_ "%*d", TABLE_COL_SIZE_YEAR, info->year);
 
-    printf(GRN " | " RESET "%*d", TABLE_COL_SIZE_MILEAGE, info->mileage);
+    printf(_I_ "%*d", TABLE_COL_SIZE_MILEAGE, info->mileage);
 
-    printf(GRN " | " RESET "%*d", TABLE_COL_SIZE_REPAIRS_N, info->repairs_n);
+    printf(_I_ "%*d", TABLE_COL_SIZE_REPAIRS_N, info->repairs_n);
 
-    printf(GRN " | " RESET "%*d", TABLE_COL_SIZE_OWNERS_N, info->owners_n);
+    printf(_I_ "%*d", TABLE_COL_SIZE_OWNERS_N, info->owners_n);
 }
 
 /*
@@ -121,15 +126,15 @@ void print_car_table_row(const size_t index, const car_t *car)
 {
     printf(GRN "| " RESET "%*lu", TABLE_COL_SIZE_INDEX, index + 1);
 
-    printf(GRN " | " RESET "%-*s", TABLE_COL_SIZE_BRAND, car->brand);
+    printf(_I_ "%-*s", TABLE_COL_SIZE_BRAND, car->brand);
 
-    printf(GRN " | " RESET "%-*s", TABLE_COL_SIZE_COUNTRY, car->country);
+    printf(_I_ "%-*s", TABLE_COL_SIZE_COUNTRY, car->country);
 
-    printf(GRN " | " RESET "%*ld", TABLE_COL_SIZE_PRICE, car->price);
+    printf(_I_ "%*ld", TABLE_COL_SIZE_PRICE, car->price);
 
-    printf(GRN " | " RESET "%-*s", TABLE_COL_SIZE_COLOR, car->color);
+    printf(_I_ "%-*s", TABLE_COL_SIZE_COLOR, car->color);
 
-    printf(GRN " | " RESET "%-*s", TABLE_COL_SIZE_STATE, car->is_new ? "new" : "used");
+    printf(_I_ "%-*s", TABLE_COL_SIZE_STATE, car->is_new ? "new" : "used");
 
     if (car->is_new)
     {
@@ -140,5 +145,5 @@ void print_car_table_row(const size_t index, const car_t *car)
         print_car_table_row_state_old(&car->state.old_info);
     }
 
-    printf(GRN " |\n" RESET);
+    printf(_I_n);
 }

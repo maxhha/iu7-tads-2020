@@ -5,6 +5,5 @@
 #include <stdio.h>
 #include <string.h>
 #include "menu.h"
-#include "vec.h"
 
 #endif // __MAIN_H__
