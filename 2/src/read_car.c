@@ -112,5 +112,7 @@ int read_car(car_t *car)
             return EREAD;
     }
 
+    wait_new_line();
+
     return OK;
 }
