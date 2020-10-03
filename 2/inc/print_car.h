@@ -10,7 +10,7 @@
 #include "delimeters.h"
 #include "car.h"
 
-#define TABLE_COL_SIZE_INDEX 2
+#define TABLE_COL_SIZE_INDEX 3
 #define TABLE_COL_SIZE_BRAND 14
 #define TABLE_COL_SIZE_COUNTRY 14
 #define TABLE_COL_SIZE_PRICE 14

@@ -152,7 +152,7 @@ void print_car_key_table_header(void)
 
     printf(_I_n);
 
-    printf(I_);
+    printf(I_ YEL);
     print_repeat("-", TABLE_COL_SIZE_INDEX);
 
     printf(_I_ YEL);
