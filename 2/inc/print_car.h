@@ -7,6 +7,7 @@
 #include <string.h>
 #include "errors.h"
 #include "colors.h"
+#include "delimeters.h"
 #include "car.h"
 
 #define TABLE_COL_SIZE_INDEX 2

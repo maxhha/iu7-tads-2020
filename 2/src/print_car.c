@@ -1,14 +1,4 @@
 #include "../inc/print_car.h"
-#define I GRN "|" RESET
-#define _I " " I
-#define I_ I " "
-#define _I_ " " I " "
-#define _I_n _I_ "\n"
-
-/*
-    Выводит строку n раз
-*/
-#define print_repeat(c, n) do { for(int i = 0; i < n; i++) printf(c); } while(0)
 
 /*
     Выводит шапку таблицы машин
@@ -51,7 +41,7 @@ void print_car_table_header(void)
 
     printf(_I_n);
 
-    printf(I_);
+    printf(I_ YEL);
     print_repeat("-", TABLE_COL_SIZE_INDEX);
 
     printf(_I_ YEL);
