@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "errors.h"
+#include "colors.h"
 #include "helpers.h"
 #include "car.h"
 

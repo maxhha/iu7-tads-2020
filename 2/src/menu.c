@@ -48,10 +48,7 @@ int menu_action_add(car_t *car_table, size_t *car_table_size)
 
     printf("\n");
     if (read_car(stdin, stdout, &car) != OK)
-    {
-        printf(RED "Неправильный ввод.\n" RESET);
         return OK;
-    }
 
     car_table[(*car_table_size)++] = car;
 

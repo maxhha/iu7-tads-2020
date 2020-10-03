@@ -4,9 +4,9 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#define CAR_BRAND_LEN 128
-#define CAR_COUNTRY_LEN 128
-#define CAR_COLOR_LEN 128
+#define CAR_BRAND_LEN 14
+#define CAR_COUNTRY_LEN 14
+#define CAR_COLOR_LEN 10
 
 typedef struct {
     int guarantee;

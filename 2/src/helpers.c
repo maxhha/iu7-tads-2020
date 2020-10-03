@@ -13,7 +13,10 @@ char *fgetline(char *dest, int maxlen, FILE *f)
         *i++ = c;
 
     if (c != EOF && c != '\n')
+    {
+        wait_new_line();
         return NULL;
+    }
 
     *i = '\0';
 
