@@ -14,6 +14,7 @@
 #include "print_car.h"
 #include "sorts.h"
 #include "delimeters.h"
+#include "car_csv.h"
 
 #define MENU_ACTION_LIST "ls"
 #define MENU_ACTION_ADD "add"
@@ -29,7 +30,6 @@
 #define MENU_ACTION_LEN 6
 #define FILE_NAME_LEN 128
 
-#define MAX_TABLE_SIZE 128
 #define MICROSEC_PER_SEC 1000000LL
 #define TIME_MEASURE_REPEATS 1000
 

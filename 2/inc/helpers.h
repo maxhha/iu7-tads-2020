@@ -6,9 +6,9 @@
 /*
     Делает fprintf если f не NULL
 */
-#define xfprintf(f, ...) if (f) fprintf(f, __VA_ARGS__)
+#define wait_new_line() fwait_new_line(stdin)
 
 char *fgetline(char *dest, int maxlen, FILE *f);
-void wait_new_line(void);
+void fwait_new_line(FILE *f);
 
 #endif // __HELPERS_H__

@@ -9,6 +9,6 @@
 #include "helpers.h"
 #include "car.h"
 
-int read_car(FILE *fin, FILE *fout, car_t *car);
+int read_car(car_t *car);
 
 #endif // __READ_CAR_H__

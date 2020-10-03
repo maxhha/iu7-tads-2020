@@ -3,10 +3,10 @@
 /*
     Считывает из потока информацию о состоянии новой машины
 */
-int read_car_state_new(FILE *fin, FILE *fout, car_state_new_t *info)
+int read_car_state_new(car_state_new_t *info)
 {
-    xfprintf(fout, "Гарантия (в целых годах): ");
-    if (fscanf(fin, "%d", &info->guarantee) != 1 || info->guarantee < 0)
+    printf("Гарантия (в целых годах): ");
+    if (scanf("%d", &info->guarantee) != 1 || info->guarantee < 0)
     {
         printf(RED "Неправильная гаранития.\n" RESET);
         return EREAD;
@@ -18,31 +18,31 @@ int read_car_state_new(FILE *fin, FILE *fout, car_state_new_t *info)
 /*
     Считывает из потока информацию о состоянии старой машины
 */
-int read_car_state_old(FILE *fin, FILE *fout, car_state_old_t *new_info)
+int read_car_state_old(car_state_old_t *new_info)
 {
-    xfprintf(fout, "Год выпуска: ");
-    if (fscanf(fin, "%d", &new_info->year) != 1 || new_info->year < 0)
+    printf("Год выпуска: ");
+    if (scanf("%d", &new_info->year) != 1 || new_info->year < 0)
     {
         printf(RED "Неправильный год.\n" RESET);
         return EREAD;
     }
 
-    xfprintf(fout, "Пробег (в целых км): ");
-    if (fscanf(fin, "%d", &new_info->mileage) != 1 || new_info->mileage < 0)
+    printf("Пробег (в целых км): ");
+    if (scanf("%d", &new_info->mileage) != 1 || new_info->mileage < 0)
     {
         printf(RED "Неправильный пробег.\n" RESET);
         return EREAD;
     }
 
-    xfprintf(fout, "Количество ремонтов: ");
-    if (fscanf(fin, "%d", &new_info->repairs_n) != 1 || new_info->repairs_n < 0)
+    printf("Количество ремонтов: ");
+    if (scanf("%d", &new_info->repairs_n) != 1 || new_info->repairs_n < 0)
     {
         printf(RED "Неправильное количество ремонтов.\n" RESET);
         return EREAD;
     }
 
-    xfprintf(fout, "Количество собственников: ");
-    if (fscanf(fin, "%d", &new_info->owners_n) != 1 || new_info->owners_n < 0)
+    printf("Количество собственников: ");
+    if (scanf("%d", &new_info->owners_n) != 1 || new_info->owners_n < 0)
     {
         printf(RED "Неправильное количество собственников.\n" RESET);
         return EREAD;
@@ -59,26 +59,26 @@ int read_car_state_old(FILE *fin, FILE *fout, car_state_old_t *new_info)
     @param fout файл приглашений
     @return код ошибки OK EREAD
 */
-int read_car(FILE *fin, FILE *fout, car_t *car)
+int read_car(car_t *car)
 {
     char c;
 
-    xfprintf(fout, "Марка: ");
-    if (fgetline(car->brand, CAR_BRAND_LEN + 1, fin) == NULL)
+    printf("Марка: ");
+    if (fgetline(car->brand, CAR_BRAND_LEN + 1, stdin) == NULL)
     {
         printf(RED "Слишком длинная марка.\n" RESET);
         return EREAD;
     }
 
-    xfprintf(fout, "Страна-производитель: ");
-    if (fgetline(car->country, CAR_COUNTRY_LEN + 1, fin) == NULL)
+    printf("Страна-производитель: ");
+    if (fgetline(car->country, CAR_COUNTRY_LEN + 1, stdin) == NULL)
     {
         printf(RED "Слишком длинная страна.\n" RESET);
         return EREAD;
     }
 
-    xfprintf(fout, "Цена: ");
-    if (fscanf(fin, "%ld%c", &car->price, &c) != 2 || car->price < 0)
+    printf("Цена: ");
+    if (scanf("%ld%c", &car->price, &c) != 2 || car->price < 0)
     {
         printf(RED "Неправильная цена.\n" RESET);
         return EREAD;
@@ -87,15 +87,15 @@ int read_car(FILE *fin, FILE *fout, car_t *car)
     if (c != '\n')
         wait_new_line();
 
-    xfprintf(fout, "Цвет: ");
-    if (fgetline(car->color, CAR_COLOR_LEN + 1, fin) == NULL)
+    printf("Цвет: ");
+    if (fgetline(car->color, CAR_COLOR_LEN + 1, stdin) == NULL)
     {
         printf(RED "Слишком длинный цвет.\n" RESET);
         return EREAD;
     }
 
-    xfprintf(fout, "Состояние (0 - старая, 1 - новая): ");
-    if (fscanf(fin, "%d", (int *) &car->is_new) != 1)
+    printf("Состояние (0 - старая, 1 - новая): ");
+    if (scanf("%d", (int *) &car->is_new) != 1)
     {
         printf(RED "Неправильное состояние.\n" RESET);
         return EREAD;
@@ -103,16 +103,14 @@ int read_car(FILE *fin, FILE *fout, car_t *car)
 
     if (car->is_new)
     {
-        if (read_car_state_new(fin, fout, &car->state.new_info) != OK)
+        if (read_car_state_new(&car->state.new_info) != OK)
             return EREAD;
     }
     else
     {
-        if (read_car_state_old(fin, fout, &car->state.old_info) != OK)
+        if (read_car_state_old(&car->state.old_info) != OK)
             return EREAD;
     }
-
-    wait_new_line();
 
     return OK;
 }

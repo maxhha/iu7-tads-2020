@@ -7,6 +7,7 @@
 #define CAR_BRAND_LEN 14
 #define CAR_COUNTRY_LEN 14
 #define CAR_COLOR_LEN 10
+#define MAX_TABLE_SIZE 128
 
 typedef struct {
     int guarantee;

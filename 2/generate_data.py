@@ -1,8 +1,9 @@
 import random
+import sys
 
 random.seed(202009271900)
 
-N = 60
+N = sys.argv[1] if len(sys.argv) >= 2 else 60
 
 brands = [
     "Nissan",

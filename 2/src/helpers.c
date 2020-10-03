@@ -23,11 +23,10 @@ char *fgetline(char *dest, int maxlen, FILE *f)
     return c == EOF ? NULL : dest;
 }
 
-
-void wait_new_line(void)
+void fwait_new_line(FILE *f)
 {
     int c;
     do {
-        c = getchar();
+        c = fgetc(f);
     } while (c != EOF && c != '\n');
 }

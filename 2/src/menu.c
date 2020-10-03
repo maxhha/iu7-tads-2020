@@ -47,7 +47,7 @@ int menu_action_add(car_t *car_table, size_t *car_table_size)
     }
 
     printf("\n");
-    if (read_car(stdin, stdout, &car) != OK)
+    if (read_car(&car) != OK)
         return OK;
 
     car_table[(*car_table_size)++] = car;
@@ -102,16 +102,8 @@ int menu_action_save(car_t *car_table, size_t *car_table_size)
         return OK;
     }
 
-    FILE *f = fopen(s, "wb");
-    if (f == NULL)
-    {
-        printf(RED "Ошибка открытия файла.\n" RESET);
-        return EWRITE;
-    }
-
-    fwrite(car_table, sizeof(car_t), *car_table_size, f);
-
-    fclose(f);
+    if (write_cars_to_csv(s, car_table, *car_table_size) != OK)
+        return OK;
 
     printf(GRN "\nСохранено %lu строк.\n" RESET, *car_table_size);
 
@@ -129,28 +121,8 @@ int menu_action_load(car_t *car_table, size_t *car_table_size)
         return OK;
     }
 
-    FILE *f = fopen(s, "rb");
-    if (f == NULL)
-    {
-        printf(RED "Файл не найден.\n" RESET);
+    if (read_cars_from_csv(s, car_table, car_table_size) != OK)
         return OK;
-    }
-
-    fseek(f, 0, SEEK_END);
-    long filesize = ftell(f);
-
-    if (filesize < 0 || filesize % sizeof(car_t) != 0)
-    {
-        printf(RED "Неправильный размер файла.\n" RESET);
-        return OK;
-    }
-
-    fseek(f, 0, SEEK_SET);
-
-    fread(car_table, sizeof(car_t), filesize, f);
-
-    fclose(f);
-    *car_table_size = filesize / sizeof(car_t);
 
     printf(GRN "\nЗагружено %ld строк.\n" RESET, *car_table_size);
 
