@@ -24,7 +24,7 @@ void print_menu(void)
     printf("\t%*s " YEL "- таблицу данных, пузырьком\n" RESET, MENU_ACTION_LEN, MENU_ACTION_SORT_TABLE_BUBBLE);
     printf("\t%*s " YEL "- таблицу данных, пирамидальная\n" RESET, MENU_ACTION_LEN, MENU_ACTION_SORT_TABLE_HEAPSORT);
     printf("\t%*s " YEL "- таблицу ключей, пузырьком\n" RESET, MENU_ACTION_LEN, MENU_ACTION_SORT_KEY_BUBBLE);
-    printf("\t%*s " YEL "- таблицу ключей, пирамидальная,\n" RESET, MENU_ACTION_LEN, MENU_ACTION_SORT_KEY_HEAPSORT);
+    printf("\t%*s " YEL "- таблицу ключей, пирамидальная\n" RESET, MENU_ACTION_LEN, MENU_ACTION_SORT_KEY_HEAPSORT);
     printf("\t%*s " YEL "- сравнить все способы\n" RESET, MENU_ACTION_LEN, MENU_ACTION_SORT_ALL);
     printf("\n");
 }
