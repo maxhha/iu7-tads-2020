@@ -23,7 +23,7 @@ void bsort(void *array, size_t n, size_t size, cmp_func_t cmp)
                 SWAP(j, j_next, size);
 }
 
-void hsort(void *array, size_t n, size_t size, cmp_func_t cmp)
+void psort(void *array, size_t n, size_t size, cmp_func_t cmp)
 {
     char *base = (char *) array;
     char *end = base + n * size;

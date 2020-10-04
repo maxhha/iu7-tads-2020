@@ -240,12 +240,12 @@ int menu_action_sort_table_heapsort(car_t *car_table, size_t *car_table_size)
 
     for (int i = 1; i <= TIME_MEASURE_REPEATS; i++)
     {
-        time += measure_sort_table(car_table, car_table_size, hsort, false);
+        time += measure_sort_table(car_table, car_table_size, psort, false);
     }
 
     time /= TIME_MEASURE_REPEATS;
 
-    measure_sort_table(car_table, car_table_size, hsort, true);
+    measure_sort_table(car_table, car_table_size, psort, true);
 
     printf(YEL "Пирамидальная сортировка таблицы:" RESET " %12.0lfms\n", time);
 
@@ -305,12 +305,12 @@ int menu_action_sort_key_heapsort(car_t *car_table, size_t *car_table_size)
 
     for (int i = 1; i <= TIME_MEASURE_REPEATS; i++)
     {
-        time += measure_sort_key_table(car_table, car_keys, car_table_size, hsort, false);
+        time += measure_sort_key_table(car_table, car_keys, car_table_size, psort, false);
     }
 
     time /= TIME_MEASURE_REPEATS;
 
-    measure_sort_key_table(car_table, car_keys, car_table_size, hsort, true);
+    measure_sort_key_table(car_table, car_keys, car_table_size, psort, true);
 
     printf(YEL "Пирамидальная сортировка таблицы ключей:" RESET " %12.0lfms\n", time);
 
@@ -338,9 +338,9 @@ int menu_action_sort_all(car_t *car_table, size_t *car_table_size)
     for (int i = 1; i <= TIME_MEASURE_REPEATS; i++)
     {
         timetb += measure_sort_table(car_table, car_table_size, bsort, false);
-        timeth += measure_sort_table(car_table, car_table_size, hsort, false);
+        timeth += measure_sort_table(car_table, car_table_size, psort, false);
         timekb += measure_sort_key_table(car_table, car_keys, car_table_size, bsort, false);
-        timekh += measure_sort_key_table(car_table, car_keys, car_table_size, hsort, false);
+        timekh += measure_sort_key_table(car_table, car_keys, car_table_size, psort, false);
     }
 
     timetb /= TIME_MEASURE_REPEATS;
