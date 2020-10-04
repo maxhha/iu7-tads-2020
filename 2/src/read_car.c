@@ -78,7 +78,7 @@ int read_car(car_t *car)
     }
 
     printf("Цена: ");
-    if (scanf("%ld%c", &car->price, &c) != 2 || car->price < 0)
+    if (scanf("%d%c", &car->price, &c) != 2 || car->price < 0)
     {
         printf(RED "Неправильная цена.\n" RESET);
         return EREAD;

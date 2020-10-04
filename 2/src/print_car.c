@@ -120,7 +120,7 @@ void print_car_table_row(const size_t index, const car_t *car)
 
     printf(_I_ "%-*s", TABLE_COL_SIZE_COUNTRY, car->country);
 
-    printf(_I_ "%*ld", TABLE_COL_SIZE_PRICE, car->price);
+    printf(_I_ "%*d", TABLE_COL_SIZE_PRICE, car->price);
 
     printf(_I_ "%-*s", TABLE_COL_SIZE_COLOR, car->color);
 
@@ -168,7 +168,7 @@ void print_car_key_table_row(const car_key_t *key)
 {
     printf(GRN "| " RESET "%*lu", TABLE_COL_SIZE_INDEX, key->index + 1);
 
-    printf(_I_ "%*ld", TABLE_COL_SIZE_PRICE, key->price);
+    printf(_I_ "%*d", TABLE_COL_SIZE_PRICE, key->price);
 
     printf(_I_n);
 }

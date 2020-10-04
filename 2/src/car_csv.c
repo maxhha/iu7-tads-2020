@@ -15,7 +15,7 @@ int write_cars_to_csv(const char *filename, const car_t *car_table, size_t car_t
     {
         fprintf(f, "%s;", car->brand);
         fprintf(f, "%s;", car->country);
-        fprintf(f, "%ld;", car->price);
+        fprintf(f, "%d;", car->price);
         fprintf(f, "%s;", car->color);
         fprintf(f, "%s;", car->is_new ? "1" : "0");
 

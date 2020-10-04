@@ -7,7 +7,7 @@
 #define CAR_BRAND_LEN 14
 #define CAR_COUNTRY_LEN 14
 #define CAR_COLOR_LEN 10
-#define MAX_TABLE_SIZE 128
+#define MAX_TABLE_SIZE 200
 
 typedef struct {
     int guarantee;
@@ -28,7 +28,7 @@ typedef union {
 typedef struct {
     char brand[CAR_BRAND_LEN + 1];
     char country[CAR_COUNTRY_LEN + 1];
-    long int price;
+    int price;
     char color[CAR_COLOR_LEN + 1];
     bool is_new;
     car_state_t state;
@@ -36,7 +36,7 @@ typedef struct {
 
 typedef struct {
     size_t index;
-    long int price;
+    int price;
 } car_key_t;
 
 int compare_cars_by_price(const void *car_a, const void *car_b);
