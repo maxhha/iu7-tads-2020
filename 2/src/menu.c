@@ -9,6 +9,15 @@ void print_menu(void)
     printf("%*s " YEL "- удалить запись\n" RESET, MENU_ACTION_LEN, MENU_ACTION_REMOVE);
     printf("%*s " YEL "- сохранить в файл\n" RESET, MENU_ACTION_LEN, MENU_ACTION_SAVE);
     printf("%*s " YEL "- загрузить из файла\n" RESET, MENU_ACTION_LEN, MENU_ACTION_LOAD);
+    printf("%*s " YEL "- вывести цены не новых машин \n", MENU_ACTION_LEN, MENU_ACTION_FIND);
+    print_repeat(" ", MENU_ACTION_LEN + 5);
+    printf("указанной марки,\n");
+    print_repeat(" ", MENU_ACTION_LEN + 5);
+    printf("с одним предыдущим собственником,\n");
+    print_repeat(" ", MENU_ACTION_LEN + 5);
+    printf("отсутствием ремонта и\n");
+    print_repeat(" ", MENU_ACTION_LEN + 5);
+    printf("в указанном диапазоне цен.\n" RESET);
     printf("%*s " YEL "- выйти\n" RESET, MENU_ACTION_LEN, MENU_ACTION_QUIT);
     printf("\n");
     printf("сортировать по цене:\n");
@@ -117,6 +126,7 @@ int menu_action_load(car_t *car_table, size_t *car_table_size)
 
     if (fgetline(s, FILE_NAME_LEN + 1, stdin) == NULL)
     {
+        wait_new_line();
         printf(RED "Слишком длинное название.\n" RESET);
         return OK;
     }
@@ -125,6 +135,70 @@ int menu_action_load(car_t *car_table, size_t *car_table_size)
         return OK;
 
     printf(GRN "\nЗагружено %ld строк.\n" RESET, *car_table_size);
+
+    return OK;
+}
+
+int menu_action_find(car_t *car_table, size_t *car_table_size)
+{
+    if (*car_table_size == 0)
+    {
+        printf(RED "В таблице нет данных.\n" RESET);
+        return OK;
+    }
+    char brand[CAR_BRAND_LEN + 1];
+    long int price_from, price_to;
+
+    printf("Введите марку:\n");
+    if (fgetline(brand, CAR_BRAND_LEN + 1, stdin) == NULL)
+    {
+        wait_new_line();
+        printf(RED "Слишком длинная марка\n" RESET);
+        return OK;
+    }
+
+    printf("Введите промежуток цен:\n");
+    printf("(2 числа через пробел)\n");
+    if (scanf("%ld%ld", &price_from, &price_to) != 2)
+    {
+        wait_new_line();
+        printf(RED "Неправильный ввод промежутка\n" RESET);
+        return OK;
+    }
+    wait_new_line();
+
+    if (price_from < 0 || price_to < 0)
+    {
+        printf(RED "Цена не может быть отрицательной\n" RESET);
+        return OK;
+    }
+
+    if (price_from > price_to)
+    {
+        printf(RED "Начало промежутка должно быть неменьше конца\n" RESET);
+        return OK;
+    }
+
+    car_t car_table2[MAX_TABLE_SIZE];
+    size_t filtered_cars_n = *car_table_size;
+
+    memcpy(car_table2, car_table, filtered_cars_n * sizeof(*car_table));
+
+    filter_cars(car_table2, &filtered_cars_n, brand, price_from, price_to);
+
+    printf("\n");
+    if (filtered_cars_n == 0)
+    {
+        printf(RED "Не найдено\n" RESET);
+        return OK;
+    }
+
+    print_car_table_header();
+
+    for (int i = 0; i < filtered_cars_n; i++)
+    {
+        print_car_table_row(i, car_table2 + i);
+    }
 
     return OK;
 }
@@ -391,6 +465,8 @@ int run_menu(car_t *car_table, size_t *car_table_size)
             rc = menu_action_save(car_table, car_table_size);
         else if (strcmp(action, MENU_ACTION_LOAD) == 0)
             rc = menu_action_load(car_table, car_table_size);
+        else if (strcmp(action, MENU_ACTION_FIND) == 0)
+            rc = menu_action_find(car_table, car_table_size);
         else if (strcmp(action, MENU_ACTION_SORT_TABLE_BUBBLE) == 0)
             rc = menu_action_sort_table_bubble(car_table, car_table_size);
         else if (strcmp(action, MENU_ACTION_SORT_TABLE_HEAPSORT) == 0)

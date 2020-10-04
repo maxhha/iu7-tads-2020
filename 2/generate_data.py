@@ -55,7 +55,7 @@ for i in range(N):
         repairs_n += random.randint(0, 3)
         repairs_n //= 10
         owners_n = (2020 - year) // 3 + random.randint(0, 3)
-        owners_n = int(owners_n / 4)
+        owners_n = max(1, int(owners_n / 4))
 
         print(str(year))
         print(str(mileage))
