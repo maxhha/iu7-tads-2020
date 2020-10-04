@@ -39,4 +39,7 @@ typedef struct {
     long int price;
 } car_key_t;
 
+int compare_cars_by_price(const void *car_a, const void *car_b);
+int compare_car_keys_by_price(const void *car_a, const void *car_b);
+
 #endif // __CAR_H__

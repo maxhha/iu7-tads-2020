@@ -1,6 +1,6 @@
 #include "../inc/car_filter.h"
 
-void filter_cars(car_t *car_table, size_t *car_table_size, char *brand, long int price_from, long int price_to)
+void filter_cars(car_t *car_table, size_t *car_table_size, const char *brand, long int price_from, long int price_to)
 {
     car_t *j = car_table;
     car_t *end = car_table + *car_table_size;

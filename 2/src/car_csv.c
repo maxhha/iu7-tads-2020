@@ -1,6 +1,6 @@
 #include "../inc/car_csv.h"
 
-int write_cars_to_csv(char *filename, car_t *car_table, size_t car_table_size)
+int write_cars_to_csv(const char *filename, const car_t *car_table, size_t car_table_size)
 {
     FILE *f = fopen(filename, "w");
     if (f == NULL)
@@ -9,9 +9,9 @@ int write_cars_to_csv(char *filename, car_t *car_table, size_t car_table_size)
         return EWRITE;
     }
 
-    car_t *end = car_table + car_table_size;
+    const car_t *end = car_table + car_table_size;
 
-    for (car_t *car = car_table; car < end; car++)
+    for (const car_t *car = car_table; car < end; car++)
     {
         fprintf(f, "%s;", car->brand);
         fprintf(f, "%s;", car->country);
@@ -87,7 +87,7 @@ int write_cars_to_csv(char *filename, car_t *car_table, size_t car_table_size)
         } while(c != EOF && c != ';' && c != '\n'); \
     } while(0)
 
-int read_cars_from_csv(char *filename, car_t *car_table, size_t *car_table_size)
+int read_cars_from_csv(const char *filename, car_t *car_table, size_t *car_table_size)
 {
     FILE *f = fopen(filename, "r");
 

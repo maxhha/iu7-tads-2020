@@ -1,4 +1,4 @@
-#include "../inc/helpers.h"
+#include "../inc/read_helpers.h"
 
 /*
     Работает как fgets, только не добавляет конец строки
