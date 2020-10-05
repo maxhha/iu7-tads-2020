@@ -44,7 +44,7 @@ int read_car_state_old(car_state_old_t *new_info)
     printf("Количество собственников: ");
     if (scanf("%d", &new_info->owners_n) != 1 || new_info->owners_n < 0)
     {
-        printf(RED "Неправильное количество собственников.\n" RESET);
+            printf(RED "Неправильное количество собственников.\n" RESET);
         return EREAD;
     }
 
@@ -95,7 +95,7 @@ int read_car(car_t *car)
     }
 
     printf("Состояние (0 - старая, 1 - новая): ");
-    if (scanf("%d", (int *) &car->is_new) != 1)
+    if (scanf("%d", (int *) &car->is_new) != 1 || (car->is_new != 0 && car->is_new != 1))
     {
         printf(RED "Неправильное состояние.\n" RESET);
         return EREAD;

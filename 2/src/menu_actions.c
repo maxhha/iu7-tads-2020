@@ -41,6 +41,11 @@ int menu_action_add(car_t *car_table, size_t *car_table_size)
 
 int menu_action_remove(car_t *car_table, size_t *car_table_size)
 {
+    if (*car_table_size == 0)
+    {
+        printf(RED "В таблице нет данных.\n" RESET);
+        return OK;
+    }
     int i;
     printf("Введите номер автомобиля:\n");
     if (scanf("%d", &i) != 1)
@@ -73,6 +78,11 @@ int menu_action_remove(car_t *car_table, size_t *car_table_size)
 
 int menu_action_save(car_t *car_table, size_t *car_table_size)
 {
+    if (*car_table_size == 0)
+    {
+        printf(RED "В таблице нет данных.\n" RESET);
+        return OK;
+    }
     char s[FILE_NAME_LEN + 1];
     printf("\nВведите название файла:\n");
 
@@ -104,6 +114,12 @@ int menu_action_load(car_t *car_table, size_t *car_table_size)
 
     if (read_cars_from_csv(s, car_table, car_table_size) != OK)
         return OK;
+
+    if (*car_table_size == 0)
+    {
+        printf(RED "Файл пуст\n" RESET);
+        return OK;
+    }
 
     printf(GRN "\nЗагружено %ld строк.\n" RESET, *car_table_size);
 
@@ -258,7 +274,7 @@ int menu_action_sort_table_bubble(car_t *car_table, size_t *car_table_size)
 
     measure_sort_table(car_table, car_table_size, bsort, true);
 
-    printf(YEL "Сортировка таблицы пузырьком:" RESET " %12.0lfms\n", time);
+    printf(YEL "Сортировка таблицы пузырьком:" RESET " %12.0lfµs\n", time);
 
     return OK;
 }
@@ -282,7 +298,7 @@ int menu_action_sort_table_heapsort(car_t *car_table, size_t *car_table_size)
 
     measure_sort_table(car_table, car_table_size, psort, true);
 
-    printf(YEL "Пирамидальная сортировка таблицы:" RESET " %12.0lfms\n", time);
+    printf(YEL "Пирамидальная сортировка таблицы:" RESET " %12.0lfµs\n", time);
 
     return OK;
 }
@@ -314,7 +330,7 @@ int menu_action_sort_key_bubble(car_t *car_table, size_t *car_table_size)
 
     measure_sort_key_table(car_table, car_keys, car_table_size, bsort, true);
 
-    printf(YEL "Сортировка таблицы ключей пузырьком:" RESET " %12.0lfms\n", time);
+    printf(YEL "Сортировка таблицы ключей пузырьком:" RESET " %12.0lfµs\n", time);
 
     return OK;
 }
@@ -347,7 +363,7 @@ int menu_action_sort_key_heapsort(car_t *car_table, size_t *car_table_size)
 
     measure_sort_key_table(car_table, car_keys, car_table_size, psort, true);
 
-    printf(YEL "Пирамидальная сортировка таблицы ключей:" RESET " %12.0lfms\n", time);
+    printf(YEL "Пирамидальная сортировка таблицы ключей:" RESET " %12.0lfµs\n", time);
 
     return OK;
 }
@@ -392,8 +408,8 @@ int menu_action_sort_all(car_t *car_table, size_t *car_table_size)
     print_repeat("-", 14);
     printf(_I_n);
 
-    printf(I_ "пузырьком    " _I_ "%12.0lfms" _I_ "%12.0lfms" _I_n, timetb, timekb);
-    printf(I_ "пирамидальная" _I_ "%12.0lfms" _I_ "%12.0lfms" _I_n, timeth, timekh);
+    printf(I_ "пузырьком    " _I_ "%12.0lfµs" _I_ "%12.0lfµs" _I_n, timetb, timekb);
+    printf(I_ "пирамидальная" _I_ "%12.0lfµs" _I_ "%12.0lfµs" _I_n, timeth, timekh);
 
     return OK;
 }

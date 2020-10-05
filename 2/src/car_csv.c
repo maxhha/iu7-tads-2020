@@ -46,6 +46,7 @@ int write_cars_to_csv(const char *filename, const car_t *car_table, size_t car_t
         if (c == EOF || c == '\n') \
         { \
             fclose(f); \
+            *car_table_size = 0; \
             printf(RED "Недостаточно полей\n" RESET); \
             printf(RED "%d строкa\n" RESET, (int) (car - car_table) + 1); \
             return EREAD; \
@@ -65,6 +66,7 @@ int write_cars_to_csv(const char *filename, const car_t *car_table, size_t car_t
         if (c != ';' && c != EOF && c != '\n' && i == maxlen) \
         { \
             fclose(f); \
+            *car_table_size = 0; \
             printf(RED "Превышение максимально допустимого размера поля\n" RESET); \
             printf(RED "%d строка, поле - " fieldname "\n" RESET, (int) (car - car_table) + 1); \
             return EREAD; \
@@ -110,6 +112,7 @@ int read_cars_from_csv(const char *filename, car_t *car_table, size_t *car_table
         if (*car_table_size == MAX_TABLE_SIZE)
         {
             fclose(f);
+            *car_table_size = 0;
             printf(RED "Превышение максимально допустимого размера таблицы\n" RESET);
             return EREAD;
         }
