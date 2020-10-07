@@ -3,6 +3,10 @@
 void print_menu(void)
 {
     printf("\n");
+    printf("*********************************************\n");
+    printf("*** Записи с вариантами, обработка таблиц ***\n");
+    printf("*********************************************\n");
+    printf("\n");
     printf("Действия:\n");
     printf("%*s " YEL "- вывести всю таблицу\n" RESET, MENU_ACTION_LEN, MENU_ACTION_LIST);
     printf("%*s " YEL "- добавить запись\n" RESET, MENU_ACTION_LEN, MENU_ACTION_ADD);
