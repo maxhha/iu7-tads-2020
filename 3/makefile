@@ -3,13 +3,12 @@
 CC := gcc
 CFLAGS := --std=c99 -Wall -Werror -Wfloat-equal -Wfloat-conversion -Wpedantic
 CFLAGS += $(cflags)
-OUTDIR := ./out
 SRCS := $(wildcard src/*.c)
-OBJS := $(SRCS:src/%.c=$(OUTDIR)/%.o)
+OBJS := $(SRCS:src/%.c=out/%.o)
 
 UNITCFLAGS := -lcheck -lpthread -lrt
 UNITSRCS := $(wildcard unit_tests/*.c)
-UNITOBJS := $(UNITSRCS:unit_tests/%.c=$(OUTDIR)/%.o)
+UNITOBJS := $(UNITSRCS:unit_tests/%.c=out/%.o)
 
 CODECHECKERDIR := ../../CodeChecker/CodeChecker
 CODECHECKER := $(CODECHECKERDIR)/CodeChecker.exe --rules $(CODECHECKERDIR)/Rules.txt
@@ -29,9 +28,9 @@ runmem : debug
 	drmemory -- ./app.exe $(args)
 
 gcov :
-	@rm -f $(OUTDIR)/*.c.gcov
-	@gcov -d $(OUTDIR)/*.gcda
-	@mv *.c.gcov $(OUTDIR)
+	@rm -f out/*.c.gcov
+	@gcov -d out/*.gcda
+	@mv *.c.gcov out
 
 func : app.exe
 	@./func_tests/test.sh ./app.exe
@@ -39,18 +38,26 @@ func : app.exe
 unit : unit_tests.exe
 	./unit_tests.exe
 
-unit_tests.exe : $(UNITOBJS) $(filter-out $(OUTDIR)/main.o, $(OBJS))
+unit_tests.exe : $(UNITOBJS) $(filter-out out/main.o, $(OBJS))
 	$(CC) $(CFLAGS) -o $@ $^ $(UNITCFLAGS)
 
-$(OUTDIR)/check_%.o : unit_tests/check_%.c
+out/%.d: ./src/%.c
+	@set -e; rm -f $@; \
+		$(CC) -MM $(CFLAGS) $< > $@.$$$$; \
+		sed 's,\($*\)\.o[ :]*,out/\1.o $@ : ,g' < $@.$$$$ > $@; \
+		rm -f $@.$$$$
+
+out/check_%.o : unit_tests/check_%.c
 	$(CC) $(CFLAGS) -o $@ -c $<
 
-$(OUTDIR)/%.o : src/%.c
+out/%.o : ./src/%.c
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 clean :
-	@rm -f *.exe $(OUTDIR)/*.o $(OUTDIR)/*.gcda $(OUTDIR)/*.gcno
+	@rm -f *.exe out/*.o out/*.gcda out/*.gcno
 
 check : SHELL:=/usr/bin/bash
 check :
 	$(CODECHECKER) $(SRCS)
+
+-include $(SRCS:src/%.c=out/%.d)

@@ -2,5 +2,7 @@
 *.gcda
 *.gcno
 *.o
+*.d
+*.csv
 .ccls-cache
 *.exe

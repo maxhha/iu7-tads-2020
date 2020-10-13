@@ -3,51 +3,51 @@
 int main(int argc, char const *argv[])
 {
     int rc = ERR;
-    printf(YEL "Введите матрицу " RESET "А" YEL ":\n" RESET);
+    printf(YEL "Введите матрицу-строку " RESET "А" YEL ":\n" RESET);
 
-    matrix_t *a = matrix_scan();
+    matrix_t *a = scan_row_matrix();
     if (a == NULL)
-        goto break_a;
+        return EXIT_FAILURE;
 
     printf("\n" YEL "Введите матрицу " RESET "B" YEL ":\n" RESET);
-    matrix_t *b = matrix_scan();
+    matrix_t *b = scan_matrix();
 
     if (b == NULL)
-        goto break_b;
+    {
+        free_matrix(a);
+        return EXIT_FAILURE;
+    }
 
-    matrix_t *result = matrix_create(1, 1);
+    matrix_t *result = create_matrix(1, 1);
 
     if (result == NULL)
-        goto break_result;
+    {
+        free_matrix(b);
+        free_matrix(a);
+        return EXIT_FAILURE;
+    }
 
-    rc = matrix_multiply(a, b, result);
+    rc = multiply_row_matrix_by_matrix(a, b, result);
 
     if (rc == EMATRIXMUL)
     {
         printf(RED "Размеры матриц не походят для умножения.\n" RESET);
-        goto break_mul;
     }
-    if (rc == EMEM)
+    else if (rc == EMEM)
     {
         printf(RED "Не получилось выделить память для ответа.\n" RESET);
-        goto break_mul;
+    }
+    else
+    {
+        assert(rc == OK);
+        printf("\n" GRN "Результат:\n" RESET);
+
+        print_matrix(result);
     }
 
-    assert(rc == OK);
+    free_matrix(result);
+    free_matrix(b);
+    free_matrix(a);
 
-    printf("\n" GRN "Результат:\n" RESET);
-
-    matrix_print(result);
-
-    break_mul:
-    matrix_free(result);
-
-    break_result:
-    matrix_free(b);
-
-    break_b:
-    matrix_free(a);
-
-    break_a:
     return rc == OK ? EXIT_SUCCESS : EXIT_FAILURE;
 }
