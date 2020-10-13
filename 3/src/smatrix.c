@@ -201,7 +201,52 @@ smatrix_t *scan_row_smatrix(void)
 
 int multiply_row_smatrix_by_smatrix(const smatrix_t * restrict m_row, const smatrix_t * restrict m, smatrix_t * restrict result)
 {
-    return ERR;
+    if (m_row->width != m->height || m_row->height != 1)
+        return EMATRIXMUL;
+
+    size_t w = m->width;
+    size_t n = m_row->width;
+
+    typeof(*m->values) *res = calloc(w, sizeof(*m->values));
+
+    if (res == NULL)
+        return EMEM;
+
+    for (size_t i = 0; i < m_row->n_elems; i++)
+    {
+        size_t y = m_row->columns[i];
+        typeof(*m->values) m_row_el = m_row->values[i];
+
+        size_t end = y + 1 < n ? m->row_begins[y + 1] : m->n_elems;
+
+        for (size_t j = m->row_begins[y]; j < end; j++)
+        {
+            res[m->columns[j]] += m_row_el * m->values[j];
+        }
+    }
+
+    size_t n_elems = 0;
+    for (size_t i = 0; i < w; i++)
+        n_elems += res[i] != 0;
+
+    if (resize_smatrix(result, w, 1, n_elems) != OK)
+    {
+        free(res);
+        return EMEM;
+    }
+
+    result->row_begins[0] = 0;
+
+    for (size_t i = 0, j = 0; i < w; i++)
+        if (res[i] != 0)
+        {
+            result->values[j] = res[i];
+            result->columns[j] = i;
+            j++;
+        }
+
+    free(res);
+    return OK;
 }
 
 void print_small_matrix(const smatrix_t *m)
