@@ -1,0 +1,8 @@
+#ifndef __PRINT_CONSTANTS_H__
+#define __PRINT_CONSTANTS_H__
+
+#define PRINT_VALUE_SIZE 5
+#define PRINT_MATRIX_MAX_WIDTH 10
+#define PRINT_MATRIX_MAX_HEIGHT 15
+
+#endif // __PRINT_CONSTANTS_H__

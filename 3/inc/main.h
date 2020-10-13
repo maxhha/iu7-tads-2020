@@ -2,8 +2,6 @@
 #define __MAIN_H__
 
 #include <stdlib.h>
-#include <stdio.h>
-#include <assert.h>
-#include "matrix.h"
+#include "actions.h"
 
 #endif // __MAIN_H__

@@ -4,23 +4,20 @@ matrix_t *create_matrix(size_t width, size_t height)
 {
     matrix_t *m = malloc(sizeof(matrix_t));
     if (m == NULL)
-        goto broken_m;
+        return NULL;
 
-    m->data = (int *) calloc(width * height, sizeof(int));
+    m->data = calloc(width * height, sizeof(*m->data));
 
     if (m->data == NULL)
-        goto broken_data;
+    {
+        free(m);
+        return NULL;
+    }
 
     m->width = width;
     m->height = height;
 
     return m;
-
-    broken_data:
-    free(m);
-
-    broken_m:
-    return NULL;
 }
 
 int resize_matrix(matrix_t *m, size_t width, size_t height)
@@ -28,10 +25,12 @@ int resize_matrix(matrix_t *m, size_t width, size_t height)
     if (m->width == width && m->height == height)
         return OK;
 
-    m->data = realloc(m->data, width * height * sizeof(int));
+    typeof(m->data) tmp = realloc(m->data, width * height * sizeof(int));
 
-    if (m->data == NULL)
+    if (tmp == NULL)
         return EMEM;
+
+    m->data = tmp;
 
     m->width = width;
     m->height = height;
@@ -47,10 +46,10 @@ void free_matrix(matrix_t *m)
 
 matrix_t *scan_matrix(void)
 {
-    printf("Введите количество столбцов и строк через пробел:\n");
-    size_t w, h;
+    printf("Введите количество столбцов, строк и элементов через пробел:\n");
+    size_t w, h, n;
 
-    if (scanf("%lu %lu", &w, &h) != 2 && h > 0 && w > 0)
+    if (scanf("%lu %lu %lu", &w, &h, &n) != 3 || h == 0 || w == 0 || n == 0 || w * h < n)
     {
         wait_endl();
         printf(RED "Неправильный ввод\n" RESET);
@@ -68,28 +67,40 @@ matrix_t *scan_matrix(void)
     }
 
     printf("Введите элементы матрицы:\n");
+    printf("(столбец, строка и значение элемента через пробел)\n");
 
-    for (size_t y = 0; y < h; y++)
-        for (size_t x = 0; x < w; x++)
-            if (scanf("%d", &m->data[x + y * w]) != 1)
-            {
-                free_matrix(m);
-                wait_endl();
-                printf(RED "Неправильный ввод элемента\n" RESET);
-                return NULL;
-            }
+    for (size_t i = 0, prev_x = 0, prev_y = 0; i < n; i++)
+    {
+        size_t x, y;
+        typeof(*m->data) el;
+        if (scanf("%lu %lu %d", &x, &y, &el) != 3
+            || x == 0 || y == 0 || x > w || y > h
+            || y < prev_y || (y == prev_y && x <= prev_x))
+        {
+            free_matrix(m);
+            wait_endl();
+            printf(RED "Неправильный ввод элемента\n" RESET);
+            return NULL;
+        }
+        m->data[x - 1 + (y - 1) * w] = el;
+        prev_x = x;
+        prev_y = y;
+    }
 
     wait_endl();
+
+    printf(GRN "Матрица создана:\n\n" RESET);
+    print_matrix(m, false);
 
     return m;
 }
 
 matrix_t *scan_row_matrix(void)
 {
-    printf("Введите количество столбцов:\n");
-    size_t w;
+    printf("Введите количество столбцов и элементов через пробел:\n");
+    size_t w, h = 1, n;
 
-    if (scanf("%lu", &w) != 1 && w > 0)
+    if (scanf("%lu %lu", &w, &n) != 2 || w == 0 || n == 0 || w < n)
     {
         wait_endl();
         printf(RED "Неправильный ввод\n" RESET);
@@ -98,7 +109,7 @@ matrix_t *scan_row_matrix(void)
 
     wait_endl();
 
-    matrix_t *m = create_matrix(w, 1);
+    matrix_t *m = create_matrix(w, h);
 
     if (m == NULL)
     {
@@ -107,17 +118,31 @@ matrix_t *scan_row_matrix(void)
     }
 
     printf("Введите элементы матрицы:\n");
+    printf("(столбец, строка и значение элемента через пробел)\n");
 
-    for (size_t x = 0; x < w; x++)
-        if (scanf("%d", &m->data[x]) != 1)
+    for (size_t i = 0, prev_x = 0, prev_y = 0; i < n; i++)
+    {
+        size_t x, y;
+        typeof(*m->data) el;
+        if (scanf("%lu %lu %d", &x, &y, &el) != 3
+            || x == 0 || y == 0 || x > w || y > h
+            || y < prev_y || (y == prev_y && x <= prev_x))
         {
+            printf("%d %d %d\n", y < prev_y, y == prev_y, x <= prev_x);
             free_matrix(m);
             wait_endl();
             printf(RED "Неправильный ввод элемента\n" RESET);
             return NULL;
         }
+        m->data[x - 1 + (y - 1) * w] = el;
+        prev_x = x;
+        prev_y = y;
+    }
 
     wait_endl();
+
+    printf(GRN "Матрица создана:\n\n" RESET);
+    print_matrix(m, false);
 
     return m;
 }
@@ -163,7 +188,7 @@ int multiply_row_matrix_by_matrix(const matrix_t * restrict m_row, const matrix_
 
     for (size_t x = 0; x < w; x++)
     {
-        int sum = 0;
+        typeof(*m->data) sum = 0;
         for (size_t i = 0; i < n; i++)
             sum += m_row->data[i] * m->data[x + i * w];
 
@@ -173,15 +198,40 @@ int multiply_row_matrix_by_matrix(const matrix_t * restrict m_row, const matrix_
     return OK;
 }
 
-void print_matrix(const matrix_t *m)
+void print_matrix(const matrix_t *m, bool force_big)
 {
     printf(YEL "Тип:" RESET" 2-мерная матрица\n");
-    printf(YEL "Размер:" RESET " %lux%lu\n", m->width, m->height);
+    printf(YEL "Размер:" RESET " %lu байт\n", sizeof(*m) + m->width * m->height * sizeof(*m->data));
     printf(YEL "Данные:" RESET "\n");
-    printf(I_ "Строка " _I_ "Столбец" _I_ "Значение        " _I_n);
-    printf(I_ YEL "-------" RESET _I_ YEL "-------" RESET _I_ YEL "----------------" RESET _I_n);
 
-    for (size_t y = 0; y < m->height; y++)
-        for (size_t x = 0; x < m->width; x++)
-            printf(I_ "%7lu" _I_ "%7lu" _I_ "%16d" _I_n, x + 1, y + 1, m->data[x + y * m->width]);
+    if (!force_big && m->width <= PRINT_MATRIX_MAX_WIDTH && m->height <= PRINT_MATRIX_MAX_HEIGHT)
+    {
+        for (size_t y = 0; y < m->height; y++)
+        {
+            printf(I_ "%*d", PRINT_VALUE_SIZE, m->data[y * m->width]);
+
+            for (size_t x = 1; x < m->width; x++)
+                printf(_I_ "%*d", PRINT_VALUE_SIZE, m->data[x + y * m->width]);
+
+            printf(_I_n);
+        }
+    }
+    else
+    {
+        #define VALUE_TITLE_STR_LEN 8
+        #define VALUE_LEN MAX(VALUE_TITLE_STR_LEN, PRINT_VALUE_SIZE)
+
+        printf(I_ "Столбец" _I_ "Строка " _I_ "%-*s" _I_n, VALUE_LEN + VALUE_TITLE_STR_LEN, "Значение");
+
+        printf(I_ YEL "-------" RESET _I_ YEL "-------" RESET _I_ YEL);
+        print_repeat("-", VALUE_LEN);
+        printf(RESET _I_n);
+
+        for (size_t y = 0; y < m->height; y++)
+            for (size_t x = 0; x < m->width; x++)
+                printf(I_ "%7lu" _I_ "%7lu" _I_ "%*d" _I_n, x + 1, y + 1, VALUE_LEN, m->data[x + y * m->width]);
+
+        #undef VALUE_TITLE_STR_LEN
+        #undef VALUE_LEN
+    }
 }
