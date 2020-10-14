@@ -79,11 +79,65 @@ void free_smatrix(smatrix_t *m)
     free(m);
 }
 
+int cmp_size_t(const void *a, const void *b)
+{
+    size_t sa = *(const size_t *) a;
+    size_t sb = *(const size_t *) b;
+
+    return sa < sb ? -1 : sa == sb ? 0 : 1;
+}
+
+void fill_random_smatrix(smatrix_t *m)
+{
+    size_t h = m->height;
+    size_t w = m->width;
+    size_t n = m->n_elems;
+
+    for (size_t i = 0; i < h; i++)
+    {
+        m->row_begins[i] = 0;
+    }
+
+    for (size_t i = 0; i < n; )
+    {
+        size_t c = rand() % h;
+        if (m->row_begins[c] < w)
+        {
+            m->row_begins[c] += 1;
+            m->values[i] = (rand() % 9 + 1) * (rand() % 2 * 2 - 1);
+            i++;
+        }
+    }
+
+    for (size_t i = 0, j = 0; i < h; i++)
+    {
+        for (size_t k = 0; k < m->row_begins[i];)
+        {
+            size_t r = rand() % w;
+            bool uniq = true;
+            for (size_t kk = 0; uniq && kk < m->row_begins[i]; kk++)
+                uniq = m->columns[kk + j] != r;
+
+            if (uniq)
+            {
+                m->columns[k + j] = r;
+                k++;
+            }
+        }
+
+        qsort(m->columns + j,  m->row_begins[i], sizeof(size_t), cmp_size_t);
+
+        size_t tmp = m->row_begins[i];
+        m->row_begins[i] = j;
+        j += tmp;
+    }
+}
+
 smatrix_t *scan_smatrix(void)
 {
-    printf("Введите количество столбцов, строк и элементов через пробел:\n");
-    size_t w, h, n;
-    if (scanf("%lu %lu %lu", &w, &h, &n) != 3 || h == 0 || w == 0 || n == 0 || h * w < n)
+    printf("Введите количество столбцов и строк через пробел:\n");
+    size_t w, h;
+    if (scanf("%lu %lu", &w, &h) != 2 || h == 0 || w == 0)
     {
         wait_endl();
         printf(RED "Неправильный ввод\n" RESET);
@@ -92,46 +146,110 @@ smatrix_t *scan_smatrix(void)
 
     wait_endl();
 
-    smatrix_t *m = create_smatrix(w, h, n);
+    printf("Заполнить матрицу случайно?\n");
+    printf("(y - да, n - нет)\n");
 
-    if (m == NULL)
+    smatrix_t *m;
+    int c = getchar();
+
+    wait_endl();
+
+    if (c == 'y')
     {
-        printf(RED "Не хватило памяти для создания матрицы\n" RESET);
-        return NULL;
-    }
+        size_t n;
+        double percent;
+        printf("Введите процент заполненности (0-1):\n");
 
-    printf("Введите элементы матрицы:\n");
-    printf("(столбец, строка и значение элемента через пробел)\n");
-
-    size_t prev_y = 0;
-    for (size_t i = 0, prev_x = 0; i < n; i++)
-    {
-        size_t x, y;
-        typeof(*m->values) el;
-        if (scanf("%lu %lu %d", &x, &y, &el) != 3
-            || x == 0 || y == 0 || x > w || y > h
-            || y < prev_y || (y == prev_y && x <= prev_x))
+        if (scanf("%lf", &percent) != 1 || percent < 0 || percent > 1)
         {
-            free_smatrix(m);
             wait_endl();
-            printf(RED "Неправильный ввод элемента\n" RESET);
+            printf(RED "Неправильный ввод\n" RESET);
             return NULL;
         }
 
-        m->values[i] = el;
-        m->columns[i] = x - 1;
+        wait_endl();
 
-        for (size_t yy = prev_y; yy < y; yy++)
-            m->row_begins[yy] = i;
+        n = (size_t) (w * h * percent);
 
-        prev_x = x;
-        prev_y = y;
+        if (n == 0)
+        {
+            printf(RED "Количество элеентов не должно быть 0\n" RESET);
+            return NULL;
+        }
+
+        m = create_smatrix(w, h, n);
+
+        if (m == NULL)
+        {
+            printf(RED "Не хватило памяти для создания матрицы\n" RESET);
+            return NULL;
+        }
+
+        fill_random_smatrix(m);
+
+        printf("Заполнено %lu элементов\n", n);
+    }
+    else if (c == 'n')
+    {
+        size_t n;
+        printf("Введите количество элементов:\n");
+
+        if (scanf("%lu", &n) != 1 || n == 0 || h * w < n)
+        {
+            wait_endl();
+            printf(RED "Неправильный ввод\n" RESET);
+            return NULL;
+        }
+
+        wait_endl();
+
+        m = create_smatrix(w, h, n);
+
+        if (m == NULL)
+        {
+            printf(RED "Не хватило памяти для создания матрицы\n" RESET);
+            return NULL;
+        }
+
+        printf("Введите элементы матрицы:\n");
+        printf("(столбец, строка и значение элемента через пробел)\n");
+
+        size_t prev_y = 0;
+        for (size_t i = 0, prev_x = 0; i < n; i++)
+        {
+            size_t x, y;
+            typeof(*m->values) el;
+            if (scanf("%lu %lu %d", &x, &y, &el) != 3
+                || x == 0 || y == 0 || x > w || y > h
+                || y < prev_y || (y == prev_y && x <= prev_x))
+            {
+                free_smatrix(m);
+                wait_endl();
+                printf(RED "Неправильный ввод элемента\n" RESET);
+                return NULL;
+            }
+
+            m->values[i] = el;
+            m->columns[i] = x - 1;
+
+            for (size_t yy = prev_y; yy < y; yy++)
+                m->row_begins[yy] = i;
+
+            prev_x = x;
+            prev_y = y;
+        }
+
+        for (size_t yy = prev_y; yy < h; yy++)
+            m->row_begins[yy] = n;
+
+        wait_endl();
+    }
+    else
+    {
+        printf(RED "Неправильный ввод\n" RESET);
+        return NULL;
     }
 
-    for (size_t yy = prev_y; yy < h; yy++)
-        m->row_begins[yy] = n;
-
-    wait_endl();
 
     printf(GRN "Матрица создана:\n\n" RESET);
     print_smatrix(m, false);
@@ -141,9 +259,9 @@ smatrix_t *scan_smatrix(void)
 
 smatrix_t *scan_row_smatrix(void)
 {
-    printf("Введите количество столбцов и элементов через пробел:\n");
-    size_t w, h = 1, n;
-    if (scanf("%lu %lu", &w, &n) != 2 || w == 0 || n == 0 || h * w < n)
+    printf("Введите количество столбцов:\n");
+    size_t w, h = 1;
+    if (scanf("%lu", &w) != 1 || w == 0)
     {
         wait_endl();
         printf(RED "Неправильный ввод\n" RESET);
@@ -152,46 +270,110 @@ smatrix_t *scan_row_smatrix(void)
 
     wait_endl();
 
-    smatrix_t *m = create_smatrix(w, h, n);
+    printf("Заполнить матрицу случайно?\n");
+    printf("(y - да, n - нет)\n");
 
-    if (m == NULL)
+    smatrix_t *m;
+    int c = getchar();
+
+    wait_endl();
+
+    if (c == 'y')
     {
-        printf(RED "Не хватило памяти для создания матрицы\n" RESET);
-        return NULL;
-    }
+        size_t n;
+        double percent;
+        printf("Введите процент заполненности (0-1):\n");
 
-    printf("Введите элементы матрицы:\n");
-    printf("(столбец, строка и значение элемента через пробел)\n");
-
-    size_t prev_y = 0;
-    for (size_t i = 0, prev_x = 0; i < n; i++)
-    {
-        size_t x, y;
-        typeof(*m->values) el;
-        if (scanf("%lu %lu %d", &x, &y, &el) != 3
-            || x == 0 || y == 0 || x > w || y > h
-            || y < prev_y || (y == prev_y && x <= prev_x))
+        if (scanf("%lf", &percent) != 1 || percent < 0 || percent > 1)
         {
-            free_smatrix(m);
             wait_endl();
-            printf(RED "Неправильный ввод элемента\n" RESET);
+            printf(RED "Неправильный ввод\n" RESET);
             return NULL;
         }
 
-        m->values[i] = el;
-        m->columns[i] = x - 1;
+        wait_endl();
 
-        for (size_t yy = prev_y; yy < y; yy++)
-            m->row_begins[yy] = i;
+        n = (size_t) (w * h * percent);
 
-        prev_x = x;
-        prev_y = y;
+        if (n == 0)
+        {
+            printf(RED "Количество элеентов не должно быть 0\n" RESET);
+            return NULL;
+        }
+
+        m = create_smatrix(w, h, n);
+
+        if (m == NULL)
+        {
+            printf(RED "Не хватило памяти для создания матрицы\n" RESET);
+            return NULL;
+        }
+
+        fill_random_smatrix(m);
+
+        printf("Заполнено %lu элементов\n", n);
+    }
+    else if (c == 'n')
+    {
+        size_t n;
+        printf("Введите количество элементов:\n");
+
+        if (scanf("%lu", &n) != 1 || n == 0 || h * w < n)
+        {
+            wait_endl();
+            printf(RED "Неправильный ввод\n" RESET);
+            return NULL;
+        }
+
+        wait_endl();
+
+        m = create_smatrix(w, h, n);
+
+        if (m == NULL)
+        {
+            printf(RED "Не хватило памяти для создания матрицы\n" RESET);
+            return NULL;
+        }
+
+        printf("Введите элементы матрицы:\n");
+        printf("(столбец, строка и значение элемента через пробел)\n");
+
+        size_t prev_y = 0;
+        for (size_t i = 0, prev_x = 0; i < n; i++)
+        {
+            size_t x, y;
+            typeof(*m->values) el;
+            if (scanf("%lu %lu %d", &x, &y, &el) != 3
+                || x == 0 || y == 0 || x > w || y > h
+                || y < prev_y || (y == prev_y && x <= prev_x))
+            {
+                free_smatrix(m);
+                wait_endl();
+                printf(RED "Неправильный ввод элемента\n" RESET);
+                return NULL;
+            }
+
+            m->values[i] = el;
+            m->columns[i] = x - 1;
+
+            for (size_t yy = prev_y; yy < y; yy++)
+                m->row_begins[yy] = i;
+
+            prev_x = x;
+            prev_y = y;
+        }
+
+        for (size_t yy = prev_y; yy < h; yy++)
+            m->row_begins[yy] = n;
+
+        wait_endl();
+    }
+    else
+    {
+        printf(RED "Неправильный ввод\n" RESET);
+        return NULL;
     }
 
-    for (size_t yy = prev_y; yy < h; yy++)
-        m->row_begins[yy] = n;
-
-    wait_endl();
 
     printf(GRN "Матрица создана:\n\n" RESET);
     print_smatrix(m, false);
@@ -310,6 +492,21 @@ void print_big_matrix(const smatrix_t *m)
 
 void print_smatrix(const smatrix_t *m, bool force_big)
 {
+    printf("m->values = ");
+    for (size_t i = 0; i < m->n_elems; i++)
+        printf(" %d", m->values[i]);
+    printf("\n");
+
+    printf("m->columns = ");
+    for (size_t i = 0; i < m->n_elems; i++)
+        printf(" %lu", m->columns[i]);
+    printf("\n");
+
+    printf("m->row_begins = ");
+    for (size_t i = 0; i < m->height; i++)
+        printf(" %lu", m->row_begins[i]);
+    printf("\n");
+
     printf(YEL "Тип:" RESET" 2-мерная разреженная матрица\n");
     printf(YEL "Размер:" RESET " %lu байт\n",
         sizeof(*m) + (sizeof(*m->values) + sizeof(*m->columns)) * m->n_elems + sizeof(*m->row_begins) * m->height);

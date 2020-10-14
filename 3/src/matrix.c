@@ -44,12 +44,29 @@ void free_matrix(matrix_t *m)
     free(m);
 }
 
+void fill_random_matrix(matrix_t *m, size_t n)
+{
+    size_t h = m->height;
+    size_t w = m->width;
+
+    for (size_t i = 0; i < n; )
+    {
+        size_t x = rand() % w;
+        size_t y = rand() % h;
+        if (m->data[x + y * w] == 0)
+        {
+            m->data[x + y * w] = (rand() % 9 + 1) * (rand() % 2 * 2 - 1);
+            i++;
+        }
+    }
+}
+
 matrix_t *scan_matrix(void)
 {
-    printf("Введите количество столбцов, строк и элементов через пробел:\n");
-    size_t w, h, n;
+    printf("Введите количество столбцов и строк через пробел:\n");
+    size_t w, h;
 
-    if (scanf("%lu %lu %lu", &w, &h, &n) != 3 || h == 0 || w == 0 || n == 0 || w * h < n)
+    if (scanf("%lu %lu", &w, &h) != 2 || h == 0 || w == 0)
     {
         wait_endl();
         printf(RED "Неправильный ввод\n" RESET);
@@ -58,36 +75,99 @@ matrix_t *scan_matrix(void)
 
     wait_endl();
 
-    matrix_t *m = create_matrix(w, h);
+    printf("Заполнить матрицу случайно?\n");
+    printf("(y - да, n - нет)\n");
 
-    if (m == NULL)
-    {
-        printf(RED "Не хватило памяти для создания матрицы\n" RESET);
-        return NULL;
-    }
-
-    printf("Введите элементы матрицы:\n");
-    printf("(столбец, строка и значение элемента через пробел)\n");
-
-    for (size_t i = 0, prev_x = 0, prev_y = 0; i < n; i++)
-    {
-        size_t x, y;
-        typeof(*m->data) el;
-        if (scanf("%lu %lu %d", &x, &y, &el) != 3
-            || x == 0 || y == 0 || x > w || y > h
-            || y < prev_y || (y == prev_y && x <= prev_x))
-        {
-            free_matrix(m);
-            wait_endl();
-            printf(RED "Неправильный ввод элемента\n" RESET);
-            return NULL;
-        }
-        m->data[x - 1 + (y - 1) * w] = el;
-        prev_x = x;
-        prev_y = y;
-    }
+    matrix_t *m;
+    int c = getchar();
 
     wait_endl();
+
+    if (c == 'y')
+    {
+        size_t n;
+        double percent;
+        printf("Введите процент заполненности (0-1):\n");
+
+        if (scanf("%lf", &percent) != 1 || percent < 0 || percent > 1)
+        {
+            wait_endl();
+            printf(RED "Неправильный ввод\n" RESET);
+            return NULL;
+        }
+
+        wait_endl();
+
+        n = (size_t) (w * h * percent);
+
+        if (n == 0)
+        {
+            printf(RED "Количество элеентов не должно быть 0\n" RESET);
+            return NULL;
+        }
+
+        m = create_matrix(w, h);
+
+        if (m == NULL)
+        {
+            printf(RED "Не хватило памяти для создания матрицы\n" RESET);
+            return NULL;
+        }
+
+        fill_random_matrix(m, n);
+
+        printf("Заполнено %lu элементов\n", n);
+    }
+    else if (c == 'n')
+    {
+        size_t n;
+        printf("Введите количество элементов:\n");
+
+        if (scanf("%lu", &n) != 1 || n == 0 || h * w < n)
+        {
+            wait_endl();
+            printf(RED "Неправильный ввод\n" RESET);
+            return NULL;
+        }
+
+        wait_endl();
+
+        m = create_matrix(w, h);
+
+        if (m == NULL)
+        {
+            printf(RED "Не хватило памяти для создания матрицы\n" RESET);
+            return NULL;
+        }
+
+        printf("Введите элементы матрицы:\n");
+        printf("(столбец, строка и значение элемента через пробел)\n");
+
+        for (size_t i = 0, prev_x = 0, prev_y = 0; i < n; i++)
+        {
+            size_t x, y;
+            typeof(*m->data) el;
+            if (scanf("%lu %lu %d", &x, &y, &el) != 3
+            || x == 0 || y == 0 || x > w || y > h
+            || y < prev_y || (y == prev_y && x <= prev_x))
+            {
+                free_matrix(m);
+                wait_endl();
+                printf(RED "Неправильный ввод элемента\n" RESET);
+                return NULL;
+            }
+            m->data[x - 1 + (y - 1) * w] = el;
+            prev_x = x;
+            prev_y = y;
+        }
+
+        wait_endl();
+    }
+    else
+    {
+        printf(RED "Неправильный ввод\n" RESET);
+        return NULL;
+    }
 
     printf(GRN "Матрица создана:\n\n" RESET);
     print_matrix(m, false);
@@ -97,10 +177,10 @@ matrix_t *scan_matrix(void)
 
 matrix_t *scan_row_matrix(void)
 {
-    printf("Введите количество столбцов и элементов через пробел:\n");
-    size_t w, h = 1, n;
+    printf("Введите количество столбцов и строк через пробел:\n");
+    size_t w, h = 1;
 
-    if (scanf("%lu %lu", &w, &n) != 2 || w == 0 || n == 0 || w < n)
+    if (scanf("%lu", &w) != 1 || w == 0)
     {
         wait_endl();
         printf(RED "Неправильный ввод\n" RESET);
@@ -109,37 +189,99 @@ matrix_t *scan_row_matrix(void)
 
     wait_endl();
 
-    matrix_t *m = create_matrix(w, h);
+    printf("Заполнить матрицу случайно?\n");
+    printf("(y - да, n - нет)\n");
 
-    if (m == NULL)
-    {
-        printf(RED "Не хватило памяти для создания матрицы\n" RESET);
-        return NULL;
-    }
-
-    printf("Введите элементы матрицы:\n");
-    printf("(столбец, строка и значение элемента через пробел)\n");
-
-    for (size_t i = 0, prev_x = 0, prev_y = 0; i < n; i++)
-    {
-        size_t x, y;
-        typeof(*m->data) el;
-        if (scanf("%lu %lu %d", &x, &y, &el) != 3
-            || x == 0 || y == 0 || x > w || y > h
-            || y < prev_y || (y == prev_y && x <= prev_x))
-        {
-            printf("%d %d %d\n", y < prev_y, y == prev_y, x <= prev_x);
-            free_matrix(m);
-            wait_endl();
-            printf(RED "Неправильный ввод элемента\n" RESET);
-            return NULL;
-        }
-        m->data[x - 1 + (y - 1) * w] = el;
-        prev_x = x;
-        prev_y = y;
-    }
+    matrix_t *m;
+    int c = getchar();
 
     wait_endl();
+
+    if (c == 'y')
+    {
+        size_t n;
+        double percent;
+        printf("Введите процент заполненности (0-1):\n");
+
+        if (scanf("%lf", &percent) != 1 || percent < 0 || percent > 1)
+        {
+            wait_endl();
+            printf(RED "Неправильный ввод\n" RESET);
+            return NULL;
+        }
+
+        wait_endl();
+
+        n = (size_t) (w * h * percent);
+
+        if (n == 0)
+        {
+            printf(RED "Количество элеентов не должно быть 0\n" RESET);
+            return NULL;
+        }
+
+        m = create_matrix(w, h);
+
+        if (m == NULL)
+        {
+            printf(RED "Не хватило памяти для создания матрицы\n" RESET);
+            return NULL;
+        }
+
+        fill_random_matrix(m, n);
+
+        printf("Заполнено %lu элементов\n", n);
+    }
+    else if (c == 'n')
+    {
+        size_t n;
+        printf("Введите количество элементов:\n");
+
+        if (scanf("%lu", &n) != 1 || n == 0 || h * w < n)
+        {
+            wait_endl();
+            printf(RED "Неправильный ввод\n" RESET);
+            return NULL;
+        }
+
+        wait_endl();
+
+        m = create_matrix(w, h);
+
+        if (m == NULL)
+        {
+            printf(RED "Не хватило памяти для создания матрицы\n" RESET);
+            return NULL;
+        }
+
+        printf("Введите элементы матрицы:\n");
+        printf("(столбец, строка и значение элемента через пробел)\n");
+
+        for (size_t i = 0, prev_x = 0, prev_y = 0; i < n; i++)
+        {
+            size_t x, y;
+            typeof(*m->data) el;
+            if (scanf("%lu %lu %d", &x, &y, &el) != 3
+            || x == 0 || y == 0 || x > w || y > h
+            || y < prev_y || (y == prev_y && x <= prev_x))
+            {
+                free_matrix(m);
+                wait_endl();
+                printf(RED "Неправильный ввод элемента\n" RESET);
+                return NULL;
+            }
+            m->data[x - 1 + (y - 1) * w] = el;
+            prev_x = x;
+            prev_y = y;
+        }
+
+        wait_endl();
+    }
+    else
+    {
+        printf(RED "Неправильный ввод\n" RESET);
+        return NULL;
+    }
 
     printf(GRN "Матрица создана:\n\n" RESET);
     print_matrix(m, false);
