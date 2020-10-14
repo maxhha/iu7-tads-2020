@@ -4,15 +4,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 #include "errors.h"
 #include "colors.h"
-#include "helpres.h"
+#include "helpers.h"
 #include "delimeters.h"
 #include "print_constants.h"
-
-#define PRINT_VALUE_SIZE 5
-#define PRINT_MATRIX_MAX_WIDTH 10
-#define PRINT_MATRIX_MAX_HEIGHT 15
 
 typedef struct {
     int *values;
@@ -33,5 +30,6 @@ int multiply_row_smatrix_by_smatrix(
     const smatrix_t * restrict m,
     smatrix_t * restrict result);
 void print_smatrix(const smatrix_t *m, bool force_elements);
+void fill_random_smatrix(smatrix_t *m);
 
 #endif // __SMATRIX_H__

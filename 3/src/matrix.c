@@ -49,6 +49,10 @@ void fill_random_matrix(matrix_t *m, size_t n)
     size_t h = m->height;
     size_t w = m->width;
 
+    for (size_t y = 0; y < h; y++)
+        for (size_t x = 0; x < w; x++)
+            m->data[x + y * w] = 0;
+
     for (size_t i = 0; i < n; )
     {
         size_t x = rand() % w;
@@ -87,9 +91,9 @@ matrix_t *scan_matrix(void)
     {
         size_t n;
         double percent;
-        printf("Введите процент заполненности (0-1):\n");
+        printf("Введите процент заполненности (1-100):\n");
 
-        if (scanf("%lf", &percent) != 1 || percent < 0 || percent > 1)
+        if (scanf("%lf", &percent) != 1 || percent < 0 || percent > 100)
         {
             wait_endl();
             printf(RED "Неправильный ввод\n" RESET);
@@ -98,7 +102,7 @@ matrix_t *scan_matrix(void)
 
         wait_endl();
 
-        n = (size_t) (w * h * percent);
+        n = (size_t) (w * h * percent / 100);
 
         if (n == 0)
         {
@@ -177,7 +181,7 @@ matrix_t *scan_matrix(void)
 
 matrix_t *scan_row_matrix(void)
 {
-    printf("Введите количество столбцов и строк через пробел:\n");
+    printf("Введите количество столбцов:\n");
     size_t w, h = 1;
 
     if (scanf("%lu", &w) != 1 || w == 0)
@@ -342,7 +346,7 @@ int multiply_row_matrix_by_matrix(const matrix_t * restrict m_row, const matrix_
 
 void print_matrix(const matrix_t *m, bool force_big)
 {
-    printf(YEL "Тип:" RESET" 2-мерная матрица\n");
+    printf(YEL "Тип:" RESET" полная матрица\n");
     printf(YEL "Размер:" RESET " %lu байт\n", sizeof(*m) + m->width * m->height * sizeof(*m->data));
     printf(YEL "Данные:" RESET "\n");
 
@@ -350,10 +354,15 @@ void print_matrix(const matrix_t *m, bool force_big)
     {
         for (size_t y = 0; y < m->height; y++)
         {
-            printf(I_ "%*d", PRINT_VALUE_SIZE, m->data[y * m->width]);
-
             for (size_t x = 1; x < m->width; x++)
-                printf(_I_ "%*d", PRINT_VALUE_SIZE, m->data[x + y * m->width]);
+            {
+                typeof(*m->data) val = m->data[x + y * m->width];
+
+                if (val == 0)
+                    printf("%s%*s", x == 0 ? I_ : _I_, PRINT_VALUE_SIZE, "_");
+                else
+                    printf("%s%*d", x == 0 ? I_ : _I_, PRINT_VALUE_SIZE, val);
+            }
 
             printf(_I_n);
         }

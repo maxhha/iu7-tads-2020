@@ -8,4 +8,9 @@
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
 #define typeof(x) __typeof__(x)
 
+/*
+    Работает как fgets, только не добавляет конец строки
+*/
+char *fgetline(char *dest, int maxlen, FILE *f);
+
 #endif // __HELPERS_H__

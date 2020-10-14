@@ -54,7 +54,7 @@ out/%.o : ./src/%.c
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 clean :
-	@rm -f *.exe out/*.o out/*.gcda out/*.gcno
+	@rm -f *.exe out/*.o out/*.d out/*.gcda out/*.gcno
 
 check : SHELL:=/usr/bin/bash
 check :

@@ -6,7 +6,7 @@
 #include <stdbool.h>
 #include "errors.h"
 #include "colors.h"
-#include "helpres.h"
+#include "helpers.h"
 #include "delimeters.h"
 #include "print_constants.h"
 
@@ -26,5 +26,6 @@ int multiply_row_matrix_by_matrix(
     const matrix_t * restrict m,
     matrix_t * restrict result);
 void print_matrix(const matrix_t *m, bool force_big);
+void fill_random_matrix(matrix_t *m, size_t n);
 
 #endif // __MATRIX_H__

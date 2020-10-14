@@ -109,21 +109,25 @@ void fill_random_smatrix(smatrix_t *m)
         }
     }
 
+    size_t *cols = malloc(w * sizeof(size_t));
+
+    if (cols == NULL)
+        exit(1);
+
+    for (size_t i = 0; i < w; i++)
+        cols[i] = i;
+
     for (size_t i = 0, j = 0; i < h; i++)
     {
-        for (size_t k = 0; k < m->row_begins[i];)
+        for (size_t k = 0; k < w; k++)
         {
-            size_t r = rand() % w;
-            bool uniq = true;
-            for (size_t kk = 0; uniq && kk < m->row_begins[i]; kk++)
-                uniq = m->columns[kk + j] != r;
-
-            if (uniq)
-            {
-                m->columns[k + j] = r;
-                k++;
-            }
+            size_t a = rand() % w;
+            size_t tmp = cols[k];
+            cols[k] = cols[a];
+            cols[a] = tmp;
         }
+
+        memcpy(m->columns + j, cols, m->row_begins[i] * sizeof(size_t));
 
         qsort(m->columns + j,  m->row_begins[i], sizeof(size_t), cmp_size_t);
 
@@ -131,6 +135,8 @@ void fill_random_smatrix(smatrix_t *m)
         m->row_begins[i] = j;
         j += tmp;
     }
+
+    free(cols);
 }
 
 smatrix_t *scan_smatrix(void)
@@ -282,9 +288,9 @@ smatrix_t *scan_row_smatrix(void)
     {
         size_t n;
         double percent;
-        printf("Введите процент заполненности (0-1):\n");
+        printf("Введите процент заполненности (1-100):\n");
 
-        if (scanf("%lf", &percent) != 1 || percent < 0 || percent > 1)
+        if (scanf("%lf", &percent) != 1 || percent < 0 || percent > 100)
         {
             wait_endl();
             printf(RED "Неправильный ввод\n" RESET);
@@ -293,7 +299,7 @@ smatrix_t *scan_row_smatrix(void)
 
         wait_endl();
 
-        n = (size_t) (w * h * percent);
+        n = (size_t) (w * h * percent / 100);
 
         if (n == 0)
         {
@@ -452,10 +458,10 @@ void print_small_matrix(const smatrix_t *m)
             else
                 val = 0;
 
-            if (x == 0)
-                printf(I_ "%*d", PRINT_VALUE_SIZE, val);
+            if (val == 0)
+                printf("%s%*s", x == 0 ? I_ : _I_, PRINT_VALUE_SIZE, "_");
             else
-                printf(_I_ "%*d", PRINT_VALUE_SIZE, val);
+                printf("%s%*d", x == 0 ? I_ : _I_, PRINT_VALUE_SIZE, val);
         }
 
         printf(_I_n);
@@ -507,7 +513,7 @@ void print_smatrix(const smatrix_t *m, bool force_big)
         printf(" %lu", m->row_begins[i]);
     printf("\n");
 
-    printf(YEL "Тип:" RESET" 2-мерная разреженная матрица\n");
+    printf(YEL "Тип:" RESET" разреженная матрица\n");
     printf(YEL "Размер:" RESET " %lu байт\n",
         sizeof(*m) + (sizeof(*m->values) + sizeof(*m->columns)) * m->n_elems + sizeof(*m->row_begins) * m->height);
     printf(YEL "Данные:" RESET "\n");

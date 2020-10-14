@@ -3,19 +3,19 @@
 int action_mul_matrix(void)
 {
     int rc = ERR;
-    printf(YEL "Введите матрицу-строку " RESET "А" YEL ":\n" RESET);
+    printf("Введите матрицу-строку:\n");
 
     matrix_t *a = scan_row_matrix();
     if (a == NULL)
-        return EXIT_FAILURE;
+        return OK;
 
-    printf("\n" YEL "Введите матрицу " RESET "B" YEL ":\n" RESET);
+    printf("\nВведите матрицу:\n");
     matrix_t *b = scan_matrix();
 
     if (b == NULL)
     {
         free_matrix(a);
-        return EXIT_FAILURE;
+        return OK;
     }
 
     matrix_t *result = create_matrix(1, 1);
@@ -24,7 +24,7 @@ int action_mul_matrix(void)
     {
         free_matrix(b);
         free_matrix(a);
-        return EXIT_FAILURE;
+        return OK;
     }
 
     rc = multiply_row_matrix_by_matrix(a, b, result);
@@ -52,23 +52,23 @@ int action_mul_matrix(void)
     return rc;
 }
 
-
 int action_mul_smatrix(void)
 {
     int rc = ERR;
-    printf(YEL "Введите матрицу-строку " RESET "А" YEL ":\n" RESET);
+    printf("Введите матрицу-строку:\n");
 
     smatrix_t *a = scan_row_smatrix();
     if (a == NULL)
-        return EXIT_FAILURE;
+        return OK;
 
-    printf("\n" YEL "Введите матрицу " RESET "B" YEL ":\n" RESET);
+    printf("\nВведите матрицу:\n");
+
     smatrix_t *b = scan_smatrix();
 
     if (b == NULL)
     {
         free_smatrix(a);
-        return EXIT_FAILURE;
+        return OK;
     }
 
     smatrix_t *result = create_smatrix(1, 1, 1);
@@ -77,7 +77,7 @@ int action_mul_smatrix(void)
     {
         free_smatrix(b);
         free_smatrix(a);
-        return EXIT_FAILURE;
+        return OK;
     }
 
     rc = multiply_row_smatrix_by_smatrix(a, b, result);
@@ -102,7 +102,7 @@ int action_mul_smatrix(void)
     free_smatrix(b);
     free_smatrix(a);
 
-    return rc;
+    return OK;
 }
 
 int action_measure_matrix_mul(void)
@@ -114,14 +114,14 @@ int action_measure_matrix_mul(void)
     if (scanf("%lu", &w_row) != 1 || w_row == 0)
     {
         printf(RED "Неправильный ввод\n" RESET);
-        return ERR;
+        return OK;
     }
 
     printf("Введите процент заполненности (0-1):\n");
     if (scanf("%lf", &percent_row) != 1 || percent_row < 0 || percent_row > 1)
     {
         printf(RED "Неправильный ввод\n" RESET);
-        return ERR;
+        return OK;
     }
 
     n_row = (size_t) (percent_row * w_row);
@@ -129,15 +129,15 @@ int action_measure_matrix_mul(void)
     if (n_row == 0)
     {
         printf(RED "Количество элементов при этом проценте равно 0\n" RESET);
-        return ERR;
+        return OK;
     }
 
     matrix_t *a = create_matrix(w_row, 1);
 
     if (a == NULL)
     {
-        printf(RED "Не хватело памяти\n" RESET);
-        return EMEM;
+        printf(RED "Не хватило памяти\n" RESET);
+        return OK;
     }
 
     printf("Введите количество столбцов и строк в матрице через пробел:\n");
@@ -145,7 +145,7 @@ int action_measure_matrix_mul(void)
     {
         free_matrix(a);
         printf(RED "Неправильный ввод\n" RESET);
-        return ERR;
+        return OK;
     }
 
     printf("Введите процент заполненности (0-1):\n");
@@ -153,7 +153,7 @@ int action_measure_matrix_mul(void)
     {
         free_matrix(a);
         printf(RED "Неправильный ввод\n" RESET);
-        return ERR;
+        return OK;
     }
 
     n = (size_t) (percent * w * h);
@@ -162,7 +162,7 @@ int action_measure_matrix_mul(void)
     {
         free_matrix(a);
         printf(RED "Количество элементов при этом проценте равно 0\n" RESET);
-        return ERR;
+        return OK;
     }
 
     matrix_t *b = create_matrix(w, h);
@@ -171,7 +171,7 @@ int action_measure_matrix_mul(void)
     {
         free_matrix(a);
         printf(RED "Не хватело памяти\n" RESET);
-        return EMEM;
+        return OK;
     }
 
     double time = 0;
@@ -190,7 +190,7 @@ int action_measure_matrix_mul(void)
             free_matrix(b);
             free_matrix(a);
             printf(RED "Не хватило памяти\n" RESET);
-            return EMEM;
+            return OK;
         }
 
         fill_random_matrix(a, n_row);
@@ -210,7 +210,7 @@ int action_measure_matrix_mul(void)
             free_matrix(b);
             free_matrix(a);
             printf(RED "Неправильный размер матриц\n" RESET);
-            return rc;
+            return OK;
         }
         else if (rc == EMEM)
         {
@@ -218,7 +218,7 @@ int action_measure_matrix_mul(void)
             free_matrix(b);
             free_matrix(a);
             printf(RED "Не хватило памяти для ответа\n" RESET);
-            return rc;
+            return OK;
         }
         assert(rc == OK);
 
@@ -227,7 +227,7 @@ int action_measure_matrix_mul(void)
 
     time /= TIME_MEASURE_REPEATS;
 
-    printf(YEL "\rВремя:" RESET " %.3lf мкс\n", time);
+    printf(YEL "\rВремя:" RESET " %.0lf мкс\n", time);
 
     return OK;
 }
@@ -241,14 +241,14 @@ int action_measure_smatrix_mul(void)
     if (scanf("%lu", &w_row) != 1 || w_row == 0)
     {
         printf(RED "Неправильный ввод\n" RESET);
-        return ERR;
+        return OK;
     }
 
     printf("Введите процент заполненности (0-1):\n");
     if (scanf("%lf", &percent_row) != 1 || percent_row < 0 || percent_row > 1)
     {
         printf(RED "Неправильный ввод\n" RESET);
-        return ERR;
+        return OK;
     }
 
     n_row = (size_t) (percent_row * w_row);
@@ -256,7 +256,7 @@ int action_measure_smatrix_mul(void)
     if (n_row == 0)
     {
         printf(RED "Количество элементов при этом проценте равно 0\n" RESET);
-        return ERR;
+        return OK;
     }
 
     smatrix_t *a = create_smatrix(w_row, 1, n_row);
@@ -264,7 +264,7 @@ int action_measure_smatrix_mul(void)
     if (a == NULL)
     {
         printf(RED "Не хватело памяти\n" RESET);
-        return EMEM;
+        return OK;
     }
 
     printf("Введите количество столбцов и строк в матрице через пробел:\n");
@@ -272,7 +272,7 @@ int action_measure_smatrix_mul(void)
     {
         free_smatrix(a);
         printf(RED "Неправильный ввод\n" RESET);
-        return ERR;
+        return OK;
     }
 
     printf("Введите процент заполненности (0-1):\n");
@@ -280,7 +280,7 @@ int action_measure_smatrix_mul(void)
     {
         free_smatrix(a);
         printf(RED "Неправильный ввод\n" RESET);
-        return ERR;
+        return OK;
     }
 
     n = (size_t) (percent * w * h);
@@ -289,7 +289,7 @@ int action_measure_smatrix_mul(void)
     {
         free_smatrix(a);
         printf(RED "Количество элементов при этом проценте равно 0\n" RESET);
-        return ERR;
+        return OK;
     }
 
     smatrix_t *b = create_smatrix(w, h, n);
@@ -298,7 +298,7 @@ int action_measure_smatrix_mul(void)
     {
         free_smatrix(a);
         printf(RED "Не хватело памяти\n" RESET);
-        return EMEM;
+        return OK;
     }
 
     double time = 0;
@@ -317,7 +317,7 @@ int action_measure_smatrix_mul(void)
             free_smatrix(b);
             free_smatrix(a);
             printf(RED "Не хватило памяти\n" RESET);
-            return EMEM;
+            return OK;
         }
 
         fill_random_smatrix(a);
@@ -337,7 +337,7 @@ int action_measure_smatrix_mul(void)
             free_smatrix(b);
             free_smatrix(a);
             printf(RED "Неправильный размер матриц\n" RESET);
-            return rc;
+            return OK;
         }
         else if (rc == EMEM)
         {
@@ -345,7 +345,7 @@ int action_measure_smatrix_mul(void)
             free_smatrix(b);
             free_smatrix(a);
             printf(RED "Не хватило памяти для ответа\n" RESET);
-            return rc;
+            return OK;
         }
         assert(rc == OK);
 
@@ -354,7 +354,7 @@ int action_measure_smatrix_mul(void)
 
     time /= TIME_MEASURE_REPEATS;
 
-    printf(YEL "\rВремя:" RESET " %.3lf\n", time);
+    printf(YEL "\rВремя:" RESET " %.0lf мкс\n", time);
 
     return OK;
 }
