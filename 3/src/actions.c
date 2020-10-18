@@ -117,14 +117,14 @@ int action_measure_matrix_mul(void)
         return OK;
     }
 
-    printf("Введите процент заполненности (0-1):\n");
-    if (scanf("%lf", &percent_row) != 1 || percent_row < 0 || percent_row > 1)
+    printf("Введите процент заполненности (0-100):\n");
+    if (scanf("%lf", &percent_row) != 1 || percent_row < 0 || percent_row > 100)
     {
         printf(RED "Неправильный ввод\n" RESET);
         return OK;
     }
 
-    n_row = (size_t) (percent_row * w_row);
+    n_row = (size_t) (percent_row * w_row / 100);
 
     if (n_row == 0)
     {
@@ -148,15 +148,15 @@ int action_measure_matrix_mul(void)
         return OK;
     }
 
-    printf("Введите процент заполненности (0-1):\n");
-    if (scanf("%lf", &percent) != 1 || percent < 0 || percent > 1)
+    printf("Введите процент заполненности (0-100):\n");
+    if (scanf("%lf", &percent) != 1 || percent < 0 || percent > 100)
     {
         free_matrix(a);
         printf(RED "Неправильный ввод\n" RESET);
         return OK;
     }
 
-    n = (size_t) (percent * w * h);
+    n = (size_t) (percent * w * h / 100);
 
     if (n == 0)
     {
@@ -244,14 +244,14 @@ int action_measure_smatrix_mul(void)
         return OK;
     }
 
-    printf("Введите процент заполненности (0-1):\n");
-    if (scanf("%lf", &percent_row) != 1 || percent_row < 0 || percent_row > 1)
+    printf("Введите процент заполненности (0-100):\n");
+    if (scanf("%lf", &percent_row) != 1 || percent_row < 0 || percent_row > 100)
     {
         printf(RED "Неправильный ввод\n" RESET);
         return OK;
     }
 
-    n_row = (size_t) (percent_row * w_row);
+    n_row = (size_t) (percent_row * w_row / 100);
 
     if (n_row == 0)
     {
@@ -275,15 +275,15 @@ int action_measure_smatrix_mul(void)
         return OK;
     }
 
-    printf("Введите процент заполненности (0-1):\n");
-    if (scanf("%lf", &percent) != 1 || percent < 0 || percent > 1)
+    printf("Введите процент заполненности (0-100):\n");
+    if (scanf("%lf", &percent) != 1 || percent < 0 || percent > 100)
     {
         free_smatrix(a);
         printf(RED "Неправильный ввод\n" RESET);
         return OK;
     }
 
-    n = (size_t) (percent * w * h);
+    n = (size_t) (percent * w * h / 100);
 
     if (n == 0)
     {
