@@ -5,5 +5,6 @@
 #define ERR 1
 #define EMEM 2
 #define EMATRIXMUL 3
+#define EMATRIXZERO 4
 
 #endif // __ERRORS_H__

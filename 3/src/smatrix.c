@@ -54,6 +54,7 @@ int resize_smatrix(smatrix_t *m, size_t width, size_t height, size_t n_elems)
             return EMEM;
 
         m->columns = tmp2;
+        m->n_elems = n_elems;
     }
 
     if (m->height != height)
@@ -64,6 +65,7 @@ int resize_smatrix(smatrix_t *m, size_t width, size_t height, size_t n_elems)
             return EMEM;
 
         m->row_begins = tmp;
+        m->height = height;
     }
 
     m->width = width;
@@ -164,9 +166,9 @@ smatrix_t *scan_smatrix(void)
     {
         size_t n;
         double percent;
-        printf("Введите процент заполненности (0-1):\n");
+        printf("Введите процент заполненности (0-100):\n");
 
-        if (scanf("%lf", &percent) != 1 || percent < 0 || percent > 1)
+        if (scanf("%lf", &percent) != 1 || percent < 0 || percent > 100)
         {
             wait_endl();
             printf(RED "Неправильный ввод\n" RESET);
@@ -175,7 +177,7 @@ smatrix_t *scan_smatrix(void)
 
         wait_endl();
 
-        n = (size_t) (w * h * percent);
+        n = (size_t) (w * h * percent / 100);
 
         if (n == 0)
         {
@@ -220,14 +222,15 @@ smatrix_t *scan_smatrix(void)
         printf("Введите элементы матрицы:\n");
         printf("(столбец, строка и значение элемента через пробел)\n");
 
-        size_t prev_y = 0;
-        for (size_t i = 0, prev_x = 0; i < n; i++)
+        for (size_t i = 0; i < m->height; i++)
+            m->row_begins[i] = 0;
+
+        for (size_t i = 0; i < n; i++)
         {
             size_t x, y;
             typeof(*m->values) el;
             if (scanf("%lu %lu %d", &x, &y, &el) != 3
-                || x == 0 || y == 0 || x > w || y > h
-                || y < prev_y || (y == prev_y && x <= prev_x))
+                || x == 0 || y == 0 || x > w || y > h)
             {
                 free_smatrix(m);
                 wait_endl();
@@ -235,18 +238,36 @@ smatrix_t *scan_smatrix(void)
                 return NULL;
             }
 
-            m->values[i] = el;
-            m->columns[i] = x - 1;
+            x -= 1;
+            y -= 1;
 
-            for (size_t yy = prev_y; yy < y; yy++)
-                m->row_begins[yy] = i;
+            size_t row_start = m->row_begins[y];
+            size_t row_end = y + 1 == m->height ? i : m->row_begins[y + 1];
 
-            prev_x = x;
-            prev_y = y;
+            size_t k = row_start;
+            while(k < row_end && x > m->columns[k])
+                k++;
+
+            if (k < row_end && m->columns[k] == x)
+            {
+                free_smatrix(m);
+                wait_endl();
+                printf(RED "Координаты элемента повторились\n" RESET);
+                return NULL;
+            }
+
+            for (size_t j = i; j > k; j--)
+            {
+                m->values[j] = m->values[j - 1];
+                m->columns[j] = m->columns[j - 1];
+            }
+
+            m->values[k] = el;
+            m->columns[k] = x;
+
+            for (size_t j = y + 1; j < m->height; j++)
+                m->row_begins[j]++;
         }
-
-        for (size_t yy = prev_y; yy < h; yy++)
-            m->row_begins[yy] = n;
 
         wait_endl();
     }
@@ -344,14 +365,15 @@ smatrix_t *scan_row_smatrix(void)
         printf("Введите элементы матрицы:\n");
         printf("(столбец, строка и значение элемента через пробел)\n");
 
-        size_t prev_y = 0;
-        for (size_t i = 0, prev_x = 0; i < n; i++)
+        for (size_t i = 0; i < m->height; i++)
+            m->row_begins[i] = 0;
+
+        for (size_t i = 0; i < n; i++)
         {
             size_t x, y;
             typeof(*m->values) el;
             if (scanf("%lu %lu %d", &x, &y, &el) != 3
-                || x == 0 || y == 0 || x > w || y > h
-                || y < prev_y || (y == prev_y && x <= prev_x))
+                || x == 0 || y == 0 || x > w || y > h)
             {
                 free_smatrix(m);
                 wait_endl();
@@ -359,18 +381,36 @@ smatrix_t *scan_row_smatrix(void)
                 return NULL;
             }
 
-            m->values[i] = el;
-            m->columns[i] = x - 1;
+            x -= 1;
+            y -= 1;
 
-            for (size_t yy = prev_y; yy < y; yy++)
-                m->row_begins[yy] = i;
+            size_t row_start = m->row_begins[y];
+            size_t row_end = y + 1 == m->height ? i : m->row_begins[y + 1];
 
-            prev_x = x;
-            prev_y = y;
+            size_t k = row_start;
+            while(k < row_end && x > m->columns[k])
+                k++;
+
+            if (k < row_end && m->columns[k] == x)
+            {
+                free_smatrix(m);
+                wait_endl();
+                printf(RED "Координаты элемента повторились\n" RESET);
+                return NULL;
+            }
+
+            for (size_t j = i; j > k; j--)
+            {
+                m->values[j] = m->values[j - 1];
+                m->columns[j] = m->columns[j - 1];
+            }
+
+            m->values[k] = el;
+            m->columns[k] = x;
+
+            for (size_t j = y + 1; j < m->height; j++)
+                m->row_begins[j] += 1;
         }
-
-        for (size_t yy = prev_y; yy < h; yy++)
-            m->row_begins[yy] = n;
 
         wait_endl();
     }
@@ -416,6 +456,12 @@ int multiply_row_smatrix_by_smatrix(const smatrix_t * restrict m_row, const smat
     size_t n_elems = 0;
     for (size_t i = 0; i < w; i++)
         n_elems += res[i] != 0;
+
+    if (n_elems == 0)
+    {
+        free(res);
+        return EMATRIXZERO;
+    }
 
     if (resize_smatrix(result, w, 1, n_elems) != OK)
     {

@@ -90,6 +90,10 @@ int action_mul_smatrix(void)
     {
         printf(RED "Не получилось выделить память для ответа.\n" RESET);
     }
+    else if (rc == EMATRIXZERO)
+    {
+        printf(RED "Результирующая матрица не содержит ненулевые элементы.\n" RESET);
+    }
     else
     {
         assert(rc == OK);
@@ -170,7 +174,7 @@ int action_measure_matrix_mul(void)
     if (b == NULL)
     {
         free_matrix(a);
-        printf(RED "Не хватело памяти\n" RESET);
+        printf(RED "Не хватило памяти\n" RESET);
         return OK;
     }
 
@@ -189,7 +193,7 @@ int action_measure_matrix_mul(void)
         {
             free_matrix(b);
             free_matrix(a);
-            printf(RED "Не хватило памяти\n" RESET);
+            printf(RED "\nНе хватило памяти\n" RESET);
             return OK;
         }
 
@@ -209,7 +213,7 @@ int action_measure_matrix_mul(void)
             free_matrix(result);
             free_matrix(b);
             free_matrix(a);
-            printf(RED "Неправильный размер матриц\n" RESET);
+            printf(RED "\nНеправильный размер матриц\n" RESET);
             return OK;
         }
         else if (rc == EMEM)
@@ -217,7 +221,7 @@ int action_measure_matrix_mul(void)
             free_matrix(result);
             free_matrix(b);
             free_matrix(a);
-            printf(RED "Не хватило памяти для ответа\n" RESET);
+            printf(RED "\nНе хватило памяти для ответа\n" RESET);
             return OK;
         }
         assert(rc == OK);
@@ -263,7 +267,7 @@ int action_measure_smatrix_mul(void)
 
     if (a == NULL)
     {
-        printf(RED "Не хватело памяти\n" RESET);
+        printf(RED "Не хватило памяти\n" RESET);
         return OK;
     }
 
@@ -297,7 +301,7 @@ int action_measure_smatrix_mul(void)
     if (b == NULL)
     {
         free_smatrix(a);
-        printf(RED "Не хватело памяти\n" RESET);
+        printf(RED "Не хватило памяти\n" RESET);
         return OK;
     }
 
@@ -316,7 +320,7 @@ int action_measure_smatrix_mul(void)
         {
             free_smatrix(b);
             free_smatrix(a);
-            printf(RED "Не хватило памяти\n" RESET);
+            printf(RED "\nНе хватило памяти\n" RESET);
             return OK;
         }
 
@@ -336,7 +340,7 @@ int action_measure_smatrix_mul(void)
             free_smatrix(result);
             free_smatrix(b);
             free_smatrix(a);
-            printf(RED "Неправильный размер матриц\n" RESET);
+            printf(RED "\nНеправильный размер матриц\n" RESET);
             return OK;
         }
         else if (rc == EMEM)
@@ -344,10 +348,10 @@ int action_measure_smatrix_mul(void)
             free_smatrix(result);
             free_smatrix(b);
             free_smatrix(a);
-            printf(RED "Не хватило памяти для ответа\n" RESET);
+            printf(RED "\nНе хватило памяти для ответа\n" RESET);
             return OK;
         }
-        assert(rc == OK);
+        assert(rc == OK || rc == EMATRIXZERO);
 
         free_smatrix(result);
     }

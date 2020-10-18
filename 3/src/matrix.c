@@ -147,22 +147,28 @@ matrix_t *scan_matrix(void)
         printf("Введите элементы матрицы:\n");
         printf("(столбец, строка и значение элемента через пробел)\n");
 
-        for (size_t i = 0, prev_x = 0, prev_y = 0; i < n; i++)
+        for (size_t i = 0; i < n; i++)
         {
             size_t x, y;
             typeof(*m->data) el;
             if (scanf("%lu %lu %d", &x, &y, &el) != 3
-            || x == 0 || y == 0 || x > w || y > h
-            || y < prev_y || (y == prev_y && x <= prev_x))
+            || x == 0 || y == 0 || x > w || y > h)
             {
                 free_matrix(m);
                 wait_endl();
                 printf(RED "Неправильный ввод элемента\n" RESET);
                 return NULL;
             }
-            m->data[x - 1 + (y - 1) * w] = el;
-            prev_x = x;
-            prev_y = y;
+            x -= 1;
+            y -= 1;
+            if (m->data[x + y * w] != 0)
+            {
+                free_matrix(m);
+                wait_endl();
+                printf(RED "Координаты элемента повторились\n" RESET);
+                return NULL;
+            }
+            m->data[x + y * w] = el;
         }
 
         wait_endl();
@@ -261,22 +267,28 @@ matrix_t *scan_row_matrix(void)
         printf("Введите элементы матрицы:\n");
         printf("(столбец, строка и значение элемента через пробел)\n");
 
-        for (size_t i = 0, prev_x = 0, prev_y = 0; i < n; i++)
+        for (size_t i = 0; i < n; i++)
         {
             size_t x, y;
             typeof(*m->data) el;
             if (scanf("%lu %lu %d", &x, &y, &el) != 3
-            || x == 0 || y == 0 || x > w || y > h
-            || y < prev_y || (y == prev_y && x <= prev_x))
+            || x == 0 || y == 0 || x > w || y > h)
             {
                 free_matrix(m);
                 wait_endl();
                 printf(RED "Неправильный ввод элемента\n" RESET);
                 return NULL;
             }
-            m->data[x - 1 + (y - 1) * w] = el;
-            prev_x = x;
-            prev_y = y;
+            x -= 1;
+            y -= 1;
+            if (m->data[x + y * w] != 0)
+            {
+                free_matrix(m);
+                wait_endl();
+                printf(RED "Координаты элемента повторились\n" RESET);
+                return NULL;
+            }
+            m->data[x + y * w] = el;
         }
 
         wait_endl();
@@ -292,34 +304,6 @@ matrix_t *scan_row_matrix(void)
 
     return m;
 }
-
-/*
-// Valid matrix multiplication
-int multiply_matrix(const matrix_t * restrict a, const matrix_t * restrict b, matrix_t * restrict result)
-{
-    if (a->width != b->height)
-        return EMATRIXMUL;
-
-    size_t w = b->width;
-    size_t h = a->height;
-    size_t n = a->width;
-
-    if (resize_matrix(result, w, h) != OK)
-        return EMEM;
-
-    for (size_t y = 0; y < h; y++)
-        for (size_t x = 0; x < w; x++)
-        {
-            int sum = 0;
-            for (size_t i = 0; i < n; i++)
-                sum += a->data[i + y * n] * b->data[x + i * w];
-
-            result->data[x + y * w] = sum;
-        }
-
-    return OK;
-}
-*/
 
 int multiply_row_matrix_by_matrix(const matrix_t * restrict m_row, const matrix_t * restrict m, matrix_t * restrict result)
 {
