@@ -37,6 +37,10 @@ int action_mul_matrix(void)
     {
         printf(RED "Не получилось выделить память для ответа.\n" RESET);
     }
+    else if (rc == EMATRIXZERO)
+    {
+        printf(RED "Результирующая матрица не содержит ненулевые элементы.\n" RESET);
+    }
     else
     {
         assert(rc == OK);
@@ -224,7 +228,7 @@ int action_measure_matrix_mul(void)
             printf(RED "\nНе хватило памяти для ответа\n" RESET);
             return OK;
         }
-        assert(rc == OK);
+        assert(rc == OK || rc == EMATRIXZERO);
 
         free_matrix(result);
     }

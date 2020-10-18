@@ -312,6 +312,7 @@ int multiply_row_matrix_by_matrix(const matrix_t * restrict m_row, const matrix_
 
     size_t w = m->width;
     size_t n = m_row->width;
+    size_t non_zero = 0;
 
     if (resize_matrix(result, w, 1) != OK)
         return EMEM;
@@ -323,9 +324,10 @@ int multiply_row_matrix_by_matrix(const matrix_t * restrict m_row, const matrix_
             sum += m_row->data[i] * m->data[x + i * w];
 
         result->data[x] = sum;
+        non_zero += sum != 0;
     }
 
-    return OK;
+    return non_zero == 0 ? EMATRIXZERO : OK;
 }
 
 void print_matrix(const matrix_t *m, bool force_big)
