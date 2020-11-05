@@ -22,7 +22,7 @@ smatrix_t *create_smatrix(size_t width, size_t height, size_t n_elems)
     }
 
     m->row_begins = malloc(height * sizeof(*m->row_begins));
-    if (m->values == NULL)
+    if (m->row_begins == NULL)
     {
         free(m->columns);
         free(m->values);
@@ -279,7 +279,7 @@ smatrix_t *scan_smatrix(void)
 
 
     printf(GRN "Матрица создана:\n\n" RESET);
-    print_smatrix(m, false);
+    print_smatrix(m);
 
     return m;
 }
@@ -309,7 +309,7 @@ smatrix_t *scan_row_smatrix(void)
     {
         size_t n;
         double percent;
-        printf("Введите процент заполненности (1-100):\n");
+        printf("Введите процент заполненности (0-100):\n");
 
         if (scanf("%lf", &percent) != 1 || percent < 0 || percent > 100)
         {
@@ -422,7 +422,7 @@ smatrix_t *scan_row_smatrix(void)
 
 
     printf(GRN "Матрица создана:\n\n" RESET);
-    print_smatrix(m, false);
+    print_smatrix(m);
 
     return m;
 }
@@ -542,29 +542,29 @@ void print_big_matrix(const smatrix_t *m)
     #undef VALUE_LEN
 }
 
-void print_smatrix(const smatrix_t *m, bool force_big)
+void print_smatrix(const smatrix_t *m)
 {
-    printf("m->values = ");
-    for (size_t i = 0; i < m->n_elems; i++)
-        printf(" %d", m->values[i]);
-    printf("\n");
-
-    printf("m->columns = ");
-    for (size_t i = 0; i < m->n_elems; i++)
-        printf(" %lu", m->columns[i]);
-    printf("\n");
-
-    printf("m->row_begins = ");
-    for (size_t i = 0; i < m->height; i++)
-        printf(" %lu", m->row_begins[i]);
-    printf("\n");
+    // printf("m->values = ");
+    // for (size_t i = 0; i < m->n_elems; i++)
+    //     printf(" %d", m->values[i]);
+    // printf("\n");
+    //
+    // printf("m->columns = ");
+    // for (size_t i = 0; i < m->n_elems; i++)
+    //     printf(" %lu", m->columns[i]);
+    // printf("\n");
+    //
+    // printf("m->row_begins = ");
+    // for (size_t i = 0; i < m->height; i++)
+    //     printf(" %lu", m->row_begins[i]);
+    // printf("\n");
 
     printf(YEL "Тип:" RESET" разреженная матрица\n");
     printf(YEL "Размер:" RESET " %lu байт\n",
         sizeof(*m) + (sizeof(*m->values) + sizeof(*m->columns)) * m->n_elems + sizeof(*m->row_begins) * m->height);
     printf(YEL "Данные:" RESET "\n");
 
-    if (!force_big && m->width <= PRINT_MATRIX_MAX_WIDTH && m->height <= PRINT_MATRIX_MAX_HEIGHT)
+    if (m->width <= PRINT_MATRIX_MAX_WIDTH && m->height <= PRINT_MATRIX_MAX_HEIGHT)
     {
         print_small_matrix(m);
     }

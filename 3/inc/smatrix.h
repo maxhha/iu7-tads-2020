@@ -29,7 +29,7 @@ int multiply_row_smatrix_by_smatrix(
     const smatrix_t * restrict m_row,
     const smatrix_t * restrict m,
     smatrix_t * restrict result);
-void print_smatrix(const smatrix_t *m, bool force_elements);
+void print_smatrix(const smatrix_t *m);
 void fill_random_smatrix(smatrix_t *m);
 
 #endif // __SMATRIX_H__

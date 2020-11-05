@@ -46,7 +46,7 @@ int action_mul_matrix(void)
         assert(rc == OK);
         printf("\n" GRN "Результат:\n" RESET);
 
-        print_matrix(result, false);
+        print_matrix(result);
     }
 
     free_matrix(result);
@@ -103,7 +103,7 @@ int action_mul_smatrix(void)
         assert(rc == OK);
         printf("\n" GRN "Результат:\n" RESET);
 
-        print_smatrix(result, false);
+        print_smatrix(result);
     }
 
     free_smatrix(result);

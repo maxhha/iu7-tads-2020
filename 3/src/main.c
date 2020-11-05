@@ -22,6 +22,7 @@ void print_menu(void)
 int main(int argc, char const **argv)
 {
     setbuf(stdout, NULL);
+    srand(time(NULL));
 
     char action[MENU_ACTION_LEN + 1] = "";
     int rc = OK;
