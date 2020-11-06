@@ -35,7 +35,6 @@ static struct argp_option options[] = {
         // "#  # #\n "
         // "#A#B #\n "
         // "######\n "
-
     },
     { 0 }
 };
@@ -71,7 +70,17 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    LOG_DEBUG("arguments parsed%s", "");
+    arguments.filein = "sample.txt";
+
+    map_t *map = read_map_from_file(arguments.filein);
+
+    if (map == NULL)
+    {
+        LOG_ERROR("не получилось прочитать карту из файла '%s'", arguments.filein);
+        return EXIT_FAILURE;
+    }
+
+    free_map(map);
 
     return EXIT_SUCCESS;
 }
