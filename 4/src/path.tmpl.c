@@ -73,7 +73,7 @@ int TMPL(push_neighboors_to, STACK)(const map_t *map, STACK_T *stack, point_t p)
         free(p); \
 } while(0)
 
-int *TMPL(create_visited_map_using, STACK)(const map_t *map)
+int *TMPL(create_visited_map_using, STACK)(const map_t *map, STACK_T *stack)
 {
     int w = map->width;
     int h = map->height;
@@ -88,15 +88,6 @@ int *TMPL(create_visited_map_using, STACK)(const map_t *map)
     for (int i = 0; i < map->width * map->height; i++)
         visited[i] = NOT_VISITED;
 
-    STACK_T *stack = TMPL(create, STACK)();
-
-    if (stack == NULL)
-    {
-        LOG_ERROR("не получилось создать стэк%s", "");
-        free(visited);
-        return NULL;
-    }
-
     point_t start_point = {
         .x = map->start_x,
         .y = map->start_y,
@@ -107,7 +98,6 @@ int *TMPL(create_visited_map_using, STACK)(const map_t *map)
     {
         LOG_ERROR("не получилось добавить начальную позицию%s", "");
 
-        TMPL(free, STACK)(stack);
         free(visited);
         return NULL;
     }
@@ -133,7 +123,6 @@ int *TMPL(create_visited_map_using, STACK)(const map_t *map)
             LOG_ERROR("не получилось добавить всех пути из позиции%s", "");
 
             CLEAR_POINT_STACK(stack);
-            TMPL(free, STACK)(stack);
             free(visited);
             return NULL;
         }
@@ -142,12 +131,11 @@ int *TMPL(create_visited_map_using, STACK)(const map_t *map)
     LOG_DEBUG("visited:%s", "");
     LOG_MATRIX(visited, w, h, "%2d");
 
-    TMPL(free, STACK)(stack);
 
     return visited;
 }
 
-int TMPL(build_path_using, STACK)(const map_t *map, const int *visited, point_t **result_path)
+int TMPL(build_path_using, STACK)(const map_t *map, const int *visited, STACK_T *stack, point_t **result_path)
 {
     int w = map->width;
     int h = map->height;
@@ -165,14 +153,6 @@ int TMPL(build_path_using, STACK)(const map_t *map, const int *visited, point_t 
         return -1;
     }
 
-    STACK_T *stack = TMPL(create, STACK)();
-
-    if (stack == NULL)
-    {
-        LOG_ERROR("не получилось создать стэк%s", "");
-        return -1;
-    }
-
     int path_len = 0;
 
     LOG_DEBUG("start build path%s", "");
@@ -186,7 +166,6 @@ int TMPL(build_path_using, STACK)(const map_t *map, const int *visited, point_t 
             LOG_ERROR("не получилось добавить позицию пути%s", "");
 
             CLEAR_POINT_STACK(stack);
-            TMPL(free, STACK)(stack);
             return -1;
         }
 
@@ -239,7 +218,6 @@ int TMPL(build_path_using, STACK)(const map_t *map, const int *visited, point_t 
             LOG_ERROR("не получилось найти более близкую к старту позицию из (%d, %d, %d)", p.x, p.y, p.v);
 
             CLEAR_POINT_STACK(stack);
-            TMPL(free, STACK)(stack);
             return -1;
         }
 
@@ -253,7 +231,6 @@ int TMPL(build_path_using, STACK)(const map_t *map, const int *visited, point_t 
         LOG_ERROR("не получилось выделить память для массива точек пути%s", "");
 
         CLEAR_POINT_STACK(stack);
-        TMPL(free, STACK)(stack);
         return -1;
     }
 
@@ -267,21 +244,19 @@ int TMPL(build_path_using, STACK)(const map_t *map, const int *visited, point_t 
         i++;
     }
 
-    TMPL(free, STACK)(stack);
-
     *result_path = path;
 
     return path_len;
 }
 
-int TMPL(get_path_using, STACK)(const map_t *map, point_t **result)
+int TMPL(get_path_using, STACK)(const map_t *map, STACK_T *stack, point_t **result)
 {
-    int *visited_map = TMPL(create_visited_map_using, STACK)(map);
+    int *visited_map = TMPL(create_visited_map_using, STACK)(map, stack);
 
     if (visited_map == NULL)
         return -1;
 
-    int rc = TMPL(build_path_using, STACK)(map, visited_map, result);
+    int rc = TMPL(build_path_using, STACK)(map, visited_map, stack, result);
 
     free(visited_map);
     return rc;
