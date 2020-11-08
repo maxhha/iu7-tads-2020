@@ -112,7 +112,7 @@ int main(int argc, char **argv)
 
     point_t *path;
 
-    int path_len = get_path(map, &path);
+    int path_len = get_path_using_stack_list(map, &path);
 
     if (path_len < 0)
     {

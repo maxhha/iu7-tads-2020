@@ -14,6 +14,6 @@ typedef struct {
 
 #define NOT_VISITED (-1)
 
-int get_path(const map_t *map, point_t **result_path);
+int get_path_using_stack_list(const map_t *map, point_t **result_path);
 
 #endif // __PATH_H__

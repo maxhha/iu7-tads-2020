@@ -3,7 +3,7 @@
 CC := gcc
 CFLAGS := --std=gnu99 -Wall -Werror -Wfloat-equal -Wfloat-conversion -Wpedantic
 CFLAGS += $(cflags)
-SRCS := $(wildcard src/*.c)
+SRCS := $(filter-out $(wildcard src/*.tmpl.c), $(wildcard src/*.c))
 OBJS := $(SRCS:src/%.c=out/%.o)
 
 UNITCFLAGS := -lcheck -lpthread -lrt
