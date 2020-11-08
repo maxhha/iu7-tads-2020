@@ -188,3 +188,69 @@ fail_cleanup_file:
 
     return NULL;
 }
+
+void print_map_with_path(FILE *f, const map_t *map, const point_t *path, int path_len)
+{
+    for (int y = 0; y < map->height; y++)
+    {
+        for (int x = 0; x < map->width; x++)
+        {
+
+            if (x == map->start_x && y == map->start_y)
+            {
+                fprintf(f, "A");
+                continue;
+            }
+
+            if (x == map->finish_x && y == map->finish_y)
+            {
+                fprintf(f, "B");
+                continue;
+            }
+
+            if (map->walls[x + y * map->width])
+            {
+                fprintf(f, "W");
+                continue;
+            }
+
+            int v = NOT_VISITED;
+
+            for (int i = 0; i < path_len && v == NOT_VISITED; i++)
+            {
+                if (path[i].x == x && path[i].y == y)
+                    v = path[i].v;
+            }
+
+            if (v == NOT_VISITED)
+            {
+                fprintf(f, " ");
+            }
+            else
+            {
+                fprintf(f, "%d", v % 10);
+            }
+        }
+        fprintf(f, "\n");
+    }
+}
+
+int print_map_with_path_to_file(char *filename, const map_t *map, const point_t *path, int path_len)
+{
+    FILE *f = fopen(filename, "w");
+
+    if (f == NULL)
+    {
+        LOG_ERROR("не получилось открыть файл для записи%s", "");
+
+        return -1;
+    }
+
+    fprintf(f, "%d %d\n", map->height, map->width);
+
+    print_map_with_path(f, map, path, path_len);
+
+    fclose(f);
+
+    return 0;
+}

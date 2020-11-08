@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-#define LOG_LEVEL NO_LOG
+// #define LOG_LEVEL NO_LOG
 #include "macrologger.h"
 
 #if LOG_LEVEL == NO_LOG
@@ -25,7 +25,7 @@
     } \
 } while (0)
 #else
-#define LOG_MATRIX(message, ...)
+#define LOG_MATRIX(ptr, w, h, fmt)
 #endif
 
 #endif // __LOG_H__

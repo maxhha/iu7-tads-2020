@@ -7,5 +7,6 @@
 
 #include "log.h"
 #include "map.h"
+#include "path.h"
 
 #endif // __MAIN_H__
