@@ -2,7 +2,7 @@
 #define __STACK_ARRAY_H__
 
 #include <stdlib.h>
-#include "log.h"
+#include <stdbool.h>
 
 #define DEFAULT_BUF_SIZE 4
 
@@ -10,6 +10,7 @@ typedef struct {
     void **buf;
     void **end;
     size_t size;
+    bool limit;
 } stack_array_t;
 
 stack_array_t *create_stack_array(size_t size);

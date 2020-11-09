@@ -21,6 +21,7 @@
 #define OPTKEY_FILEOUT 'o'
 #define OPTKEY_MAPOUTPUT 'm'
 #define OPTKEY_STACK 's'
+#define OPTKEY_LIMIT 'l'
 
 static struct argp_option options[] = {
     {
@@ -50,6 +51,13 @@ static struct argp_option options[] = {
         "STACK",
         OPTION_ARG_OPTIONAL,
         "Тип представления стэка;\nМожет быть 'list'(по умолч.) и 'array'",
+    },
+    {
+        "limit",
+        OPTKEY_LIMIT,
+        "LIMIT",
+        OPTION_ARG_OPTIONAL,
+        "Ограничение на количество элементов в стеке;\nПо умолч. 0 - без ограничения",
     },
     {
         0,
@@ -83,6 +91,7 @@ struct arguments {
     char *fileout;
     enum { FORMAT_COORDS, FORMAT_MAP } output_format;
     enum { STACK_LIST, STACK_ARRAY } stack_type;
+    size_t stack_limit;
 };
 
 static int parse_opt(int key, char *arg, struct argp_state *state)
@@ -125,6 +134,21 @@ static int parse_opt(int key, char *arg, struct argp_state *state)
         }
 
         return 0;
+        case OPTKEY_LIMIT:
+
+        if (arg == NULL)
+            return 0;
+
+        int limit;
+
+        if (sscanf(arg, "%d", &limit) != 1 || limit < 0)
+        {
+            argp_error(state, "Неправильный лимит '%s'", arg);
+        }
+
+        arguments->stack_limit = limit;
+
+        return 0;
         default: return ARGP_ERR_UNKNOWN;
     }
 }
@@ -133,7 +157,7 @@ static struct argp argp = { options, parse_opt, 0, 0};
 
 int main(int argc, char **argv)
 {
-    struct arguments arguments = { 0, 0, FORMAT_COORDS, STACK_LIST };
+    struct arguments arguments = { 0, 0, FORMAT_COORDS, STACK_LIST, 0 };
 
     if (argp_parse(&argp, argc, argv, 0, 0, &arguments))
     {
@@ -159,7 +183,7 @@ int main(int argc, char **argv)
 
     if (arguments.stack_type == STACK_LIST)
     {
-        stack_list_t *stack = create_stack_list();
+        stack_list_t *stack = create_stack_list(arguments.stack_limit);
         if (stack == NULL)
         {
             LOG_ERROR("не получилось создать стэк%s", "");
@@ -171,7 +195,7 @@ int main(int argc, char **argv)
     }
     else
     {
-        stack_array_t *stack = create_stack_array(0);
+        stack_array_t *stack = create_stack_array(arguments.stack_limit);
         if (stack == NULL)
         {
             LOG_ERROR("не получилось создать стэк%s", "");

@@ -10,6 +10,7 @@ stack_array_t *create_stack_array(size_t size)
     }
 
     s->size = size == 0 ? DEFAULT_BUF_SIZE : size;
+    s->limit = size != 0;
 
     s->buf = malloc(s->size * sizeof(*s->buf));
 
@@ -34,6 +35,9 @@ int stack_array_push(stack_array_t *stack, void *data)
 {
     if (stack->end == stack->buf + stack->size)
     {
+        if (stack->limit)
+            return -1;
+
         size_t new_size = stack->size * 2;
         void **tmp = realloc(stack->buf, new_size * sizeof(*stack->buf));
         if (tmp == NULL)
