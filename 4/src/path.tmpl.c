@@ -246,6 +246,8 @@ int TMPL(build_path_using, STACK)(const map_t *map, const int *visited, STACK_T 
 
     *result_path = path;
 
+    LOG_DEBUG("return result path%s", "");
+
     return path_len;
 }
 
@@ -253,11 +255,17 @@ int TMPL(get_path_using, STACK)(const map_t *map, STACK_T *stack, point_t **resu
 {
     int *visited_map = TMPL(create_visited_map_using, STACK)(map, stack);
 
+    LOG_DEBUG("visted = %p", (void *) visited_map);
+
     if (visited_map == NULL)
         return -1;
 
     int rc = TMPL(build_path_using, STACK)(map, visited_map, stack, result);
 
+    LOG_DEBUG("free visited map%s", "");
+
     free(visited_map);
+
+    LOG_DEBUG("return result path%s", "");
     return rc;
 }

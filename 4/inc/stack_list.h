@@ -16,7 +16,7 @@ typedef struct {
 
 stack_list_t *create_stack_list(void);
 void free_stack_list(stack_list_t *stack);
-int stack_list_push(stack_list_t *stack, const void *data);
+int stack_list_push(stack_list_t *stack, void *data);
 void *stack_list_pop(stack_list_t *stack);
 
 #endif // __STACK_LIST_H__

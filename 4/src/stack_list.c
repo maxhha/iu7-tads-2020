@@ -17,7 +17,7 @@ void free_stack_list(stack_list_t *stack)
     free(stack);
 }
 
-int stack_list_push(stack_list_t *stack, const void *data)
+int stack_list_push(stack_list_t *stack, void *data)
 {
     list_t *l = malloc(sizeof(list_t));
 

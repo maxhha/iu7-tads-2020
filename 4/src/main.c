@@ -8,7 +8,7 @@
     - [x] точки начала и конца
 - [ ] поиск пути с использованием выбранной структуры
     - [x] для списка
-    - [ ] для массива
+    - [x] для массива
     - [ ] с выводом времени выполнения и объема памяти
     - [ ] c выводом адресов памяти
 - [x] вывод результата
@@ -82,7 +82,7 @@ struct arguments {
     char *filein;
     char *fileout;
     enum { FORMAT_COORDS, FORMAT_MAP } output_format;
-    enum { STACK_LIST, STACK_ARRAY } stack;
+    enum { STACK_LIST, STACK_ARRAY } stack_type;
 };
 
 static int parse_opt(int key, char *arg, struct argp_state *state)
@@ -113,11 +113,11 @@ static int parse_opt(int key, char *arg, struct argp_state *state)
 
         if (strcmp(arg, "list") == 0)
         {
-            arguments->stack = STACK_LIST;
+            arguments->stack_type = STACK_LIST;
         }
         else if (strcmp(arg, "array") == 0)
         {
-            arguments->stack = STACK_ARRAY;
+            arguments->stack_type = STACK_ARRAY;
         }
         else
         {
@@ -143,6 +143,7 @@ int main(int argc, char **argv)
     arguments.filein = "sample.txt";
     arguments.fileout = NULL;
     arguments.output_format = FORMAT_MAP;
+    arguments.stack_type = STACK_ARRAY;
 
     map_t *map = read_map_from_file(arguments.filein);
 
@@ -156,7 +157,7 @@ int main(int argc, char **argv)
 
     int path_len;
 
-    if (arguments.stack == STACK_LIST)
+    if (arguments.stack_type == STACK_LIST)
     {
         stack_list_t *stack = create_stack_list();
         if (stack == NULL)
@@ -170,15 +171,15 @@ int main(int argc, char **argv)
     }
     else
     {
-        stack_list_t *stack = create_stack_list();
+        stack_array_t *stack = create_stack_array(0);
         if (stack == NULL)
         {
             LOG_ERROR("не получилось создать стэк%s", "");
             free_map(map);
             return EXIT_FAILURE;
         }
-        path_len = get_path_using_stack_list(map, stack, &path);
-        free_stack_list(stack);
+        path_len = get_path_using_stack_array(map, stack, &path);
+        free_stack_array(stack);
     }
 
     if (path_len < 0)

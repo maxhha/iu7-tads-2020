@@ -1,22 +1,21 @@
-#ifndef __STACK_LIST_H__
-#define __STACK_LIST_H__
+#ifndef __STACK_ARRAY_H__
+#define __STACK_ARRAY_H__
 
 #include <stdlib.h>
+#include "log.h"
 
-typedef struct list_s list_t;
-
-struct list_s {
-    list_t *next;
-    const void *data;
-};
+#define DEFAULT_BUF_SIZE 4
 
 typedef struct {
-    list_t *head;
-} stack_list_t;
+    void **buf;
+    void **end;
+    size_t size;
+} stack_array_t;
 
-stack_list_t *create_stack_list(void);
-void free_stack_list(stack_list_t *stack);
-int stack_list_push(stack_list_t *stack, const void *data);
-void *stack_list_pop(stack_list_t *stack);
+stack_array_t *create_stack_array(size_t size);
+void free_stack_array(stack_array_t *stack);
+int stack_array_push(stack_array_t *stack, void *data);
+void *stack_array_pop(stack_array_t *stack);
 
-#endif // __STACK_LIST_H__
+
+#endif // __STACK_ARRAY_H__
