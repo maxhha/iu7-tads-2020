@@ -319,12 +319,21 @@ int multiply_row_matrix_by_matrix(const matrix_t * restrict m_row, const matrix_
 
     for (size_t x = 0; x < w; x++)
     {
-        typeof(*m->data) sum = 0;
-        for (size_t i = 0; i < n; i++)
-            sum += m_row->data[i] * m->data[x + i * w];
+        result->data[x] = 0;
+    }
 
-        result->data[x] = sum;
-        non_zero += sum != 0;
+    for (size_t i = 0; i < n; i++)
+    {
+        typeof(*m_row->data) m_row_el = m_row->data[i];
+        typeof(m->data) m2_row = m->data + i * w;
+
+        if (m_row_el == 0)
+            continue;
+
+        for (size_t x = 0; x < w; x++)
+        {
+            result->data[x] += m_row_el * m2_row[x];
+        }
     }
 
     return non_zero == 0 ? EMATRIXZERO : OK;

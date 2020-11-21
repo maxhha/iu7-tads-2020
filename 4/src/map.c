@@ -38,7 +38,7 @@ void free_map(map_t *m)
 
 map_t *read_map_from_file(const char *filename)
 {
-    FILE *f = fopen(filename, "r");
+    FILE *f = filename == NULL ? stdin : fopen(filename, "r");
 
     if (f == NULL)
     {
@@ -166,7 +166,8 @@ map_t *read_map_from_file(const char *filename)
     }
 
     free(buf);
-    fclose(f);
+    if (f != stdin)
+        fclose(f);
 
     LOG_DEBUG("readed walls:%s", "");
     LOG_MATRIX(map->walls, w, h, "%d");
@@ -184,7 +185,8 @@ fail_cleanup_buf:
     free(buf);
 
 fail_cleanup_file:
-    fclose(f);
+    if (f != stdin)
+        fclose(f);
 
     return NULL;
 }
@@ -210,7 +212,7 @@ void print_map_with_path(FILE *f, const map_t *map, const point_t *path, int pat
 
             if (map->walls[x + y * map->width])
             {
-                fprintf(f, "W");
+                fprintf(f, "#");
                 continue;
             }
 

@@ -6,11 +6,11 @@
 - [x] загрузка карты из файла
     - [x] стены
     - [x] точки начала и конца
-- [ ] поиск пути с использованием выбранной структуры
+- [x] поиск пути с использованием выбранной структуры
     - [x] для списка
     - [x] для массива
-    - [ ] с выводом времени выполнения и объема памяти
-    - [ ] c выводом адресов памяти
+    - [x] с выводом времени выполнения и объема памяти
+    - [x] c выводом адресов памяти
 - [x] вывод результата
     - [x] в файл
     - [x] в консоль
@@ -22,17 +22,19 @@
 #define OPTKEY_MAPOUTPUT 'm'
 #define OPTKEY_STACK 's'
 #define OPTKEY_LIMIT 'l'
+#define OPTKEY_MEMADRS 'A'
+#define OPTKEY_TIME 't'
 
 static struct argp_option options[] = {
     {
-        0,
+        "in",
         OPTKEY_FILEIN,
         "FILEIN",
         OPTION_ARG_OPTIONAL,
         "Файл с лабиринтом",
     },
     {
-        0,
+        "out",
         OPTKEY_FILEOUT,
         "FILEOUT",
         OPTION_ARG_OPTIONAL,
@@ -58,6 +60,20 @@ static struct argp_option options[] = {
         "LIMIT",
         OPTION_ARG_OPTIONAL,
         "Ограничение на количество элементов в стеке;\nПо умолч. 0 - без ограничения",
+    },
+    {
+        "addresses",
+        OPTKEY_MEMADRS,
+        0,
+        0,
+        "Выводить адреса памяти",
+    },
+    {
+        "time",
+        OPTKEY_TIME,
+        "N",
+        OPTION_ARG_OPTIONAL,
+        "Произвести измерение времени работы стэка и выйти",
     },
     {
         0,
@@ -92,6 +108,8 @@ struct arguments {
     enum { FORMAT_COORDS, FORMAT_MAP } output_format;
     enum { STACK_LIST, STACK_ARRAY } stack_type;
     size_t stack_limit;
+    bool log_mem;
+    int time_measure_elements;
 };
 
 static int parse_opt(int key, char *arg, struct argp_state *state)
@@ -141,12 +159,25 @@ static int parse_opt(int key, char *arg, struct argp_state *state)
 
         int limit;
 
-        if (sscanf(arg, "%d", &limit) != 1 || limit < 0)
+        if (sscanf(arg, "%d", &limit) != 1 || limit <= 0)
         {
             argp_error(state, "Неправильный лимит '%s'", arg);
         }
 
         arguments->stack_limit = limit;
+
+        return 0;
+        case OPTKEY_MEMADRS:
+
+        arguments->log_mem = true;
+
+        return 0;
+        case OPTKEY_TIME:
+
+        if (sscanf(arg, "%d", &arguments->time_measure_elements) != 1 || arguments->time_measure_elements <= 0)
+        {
+            argp_error(state, "Неправильное количество элементов '%s'", arg);
+        }
 
         return 0;
         default: return ARGP_ERR_UNKNOWN;
@@ -155,20 +186,8 @@ static int parse_opt(int key, char *arg, struct argp_state *state)
 
 static struct argp argp = { options, parse_opt, 0, 0};
 
-int main(int argc, char **argv)
+int process_task(struct arguments arguments, memwatch_t *memwatch)
 {
-    struct arguments arguments = { 0, 0, FORMAT_COORDS, STACK_LIST, 0 };
-
-    if (argp_parse(&argp, argc, argv, 0, 0, &arguments))
-    {
-        return EXIT_FAILURE;
-    }
-
-    arguments.filein = "sample.txt";
-    arguments.fileout = NULL;
-    arguments.output_format = FORMAT_MAP;
-    arguments.stack_type = STACK_ARRAY;
-
     map_t *map = read_map_from_file(arguments.filein);
 
     if (map == NULL)
@@ -178,30 +197,17 @@ int main(int argc, char **argv)
     }
 
     point_t *path;
-
     int path_len;
 
     if (arguments.stack_type == STACK_LIST)
     {
-        stack_list_t *stack = create_stack_list(arguments.stack_limit);
-        if (stack == NULL)
-        {
-            LOG_ERROR("не получилось создать стэк%s", "");
-            free_map(map);
-            return EXIT_FAILURE;
-        }
+        stack_list_t *stack = create_stack_list(arguments.stack_limit, memwatch);
         path_len = get_path_using_stack_list(map, stack, &path);
         free_stack_list(stack);
     }
     else
     {
-        stack_array_t *stack = create_stack_array(arguments.stack_limit);
-        if (stack == NULL)
-        {
-            LOG_ERROR("не получилось создать стэк%s", "");
-            free_map(map);
-            return EXIT_FAILURE;
-        }
+        stack_array_t *stack = create_stack_array(arguments.stack_limit, memwatch);
         path_len = get_path_using_stack_array(map, stack, &path);
         free_stack_array(stack);
     }
@@ -230,7 +236,7 @@ int main(int argc, char **argv)
                 LOG_ERROR("не получилось открыть файл для записи%s", "");
                 LOG_ERROR("не получилось записать координаты в файл%s", "");
 
-                free(path);
+                wfree(memwatch, path);
                 free_map(map);
                 return EXIT_FAILURE;
             }
@@ -253,15 +259,149 @@ int main(int argc, char **argv)
             {
                 LOG_ERROR("не получилось записать карту в файл%s", "");
 
-                free(path);
+                wfree(memwatch, path);
                 free_map(map);
                 return EXIT_FAILURE;
             }
         }
     }
 
-    free(path);
+    wfree(memwatch, path);
     free_map(map);
 
     return EXIT_SUCCESS;
+}
+
+int process_measure_time(struct arguments arguments, memwatch_t *memwatch)
+{
+    int rc = EXIT_SUCCESS;
+    double time_push = 0, time_pop = 0;
+    clock_t start, end;
+
+    if (arguments.stack_type == STACK_LIST)
+    {
+        int data = 1;
+
+        for (int m = 0; m < TIME_MEASURE_REPEATS; m++)
+        {
+            stack_list_t *stack = create_stack_list(arguments.stack_limit, memwatch);
+
+            start = clock();
+            for (int i = 0; i < arguments.time_measure_elements && rc == 0; i++)
+            {
+                rc = stack_list_push(stack, &data);
+            }
+            end = clock();
+
+            time_push += (double) (end - start) / CLOCKS_PER_SEC;
+
+            if (rc != EXIT_SUCCESS)
+            {
+                LOG_ERROR("не получилось добавить элемент%s", "");
+                while (stack_list_pop(stack) != NULL) {}
+                free_stack_list(stack);
+                return EXIT_FAILURE;
+            }
+
+            start = clock();
+            for (int i = 0; i < arguments.time_measure_elements; i++)
+            {
+                stack_list_pop(stack);
+            }
+            end = clock();
+            time_pop += (double) (end - start) / CLOCKS_PER_SEC;
+
+            free_stack_list(stack);
+        }
+
+
+    }
+    else
+    {
+        int data = 1;
+
+        for (int m = 0; m < TIME_MEASURE_REPEATS; m++)
+        {
+            stack_array_t *stack = create_stack_array(arguments.stack_limit, memwatch);
+
+            start = clock();
+            for (int i = 0; i < arguments.time_measure_elements && rc == 0; i++)
+            {
+                rc = stack_array_push(stack, &data);
+            }
+            end = clock();
+
+            time_push += (double) (end - start) / CLOCKS_PER_SEC;
+
+            if (rc != EXIT_SUCCESS)
+            {
+                LOG_ERROR("не получилось добавить элемент%s", "");
+                while (stack_array_pop(stack) != NULL) {}
+                free_stack_array(stack);
+                return EXIT_FAILURE;
+            }
+
+            start = clock();
+            for (int i = 0; i < arguments.time_measure_elements; i++)
+            {
+                stack_array_pop(stack);
+            }
+            end = clock();
+            time_pop += (double) (end - start) / CLOCKS_PER_SEC;
+
+            free_stack_array(stack);
+        }
+
+    }
+
+    time_push /= TIME_MEASURE_REPEATS;
+    time_pop /= TIME_MEASURE_REPEATS;
+
+    printf("push: %.6lf s\npop:  %.6lf s\n", time_push, time_pop);
+
+    return rc;
+}
+
+int main(int argc, char **argv)
+{
+    struct arguments arguments = { 0, 0, FORMAT_COORDS, STACK_LIST, 0, false, -1 };
+
+    if (argp_parse(&argp, argc, argv, 0, 0, &arguments))
+    {
+        return EXIT_FAILURE;
+    }
+
+    // arguments.filein = "sample.txt";
+    // arguments.fileout = NULL;
+    // arguments.output_format = FORMAT_MAP;
+    // arguments.stack_type = STACK_LIST; //STACK_ARRAY; STACK_LIST
+    // arguments.log_mem = true;
+
+    memwatch_t *memwatch = NULL;
+
+    if (arguments.log_mem)
+    {
+        memwatch = create_memory_watch();
+        if (memwatch == NULL)
+        {
+            LOG_ERROR("не получилось создать наблюдателя за памятью%s", "");
+            return EXIT_FAILURE;
+        }
+    }
+
+    int rc;
+
+    if (arguments.time_measure_elements > 0)
+    {
+        rc = process_measure_time(arguments, memwatch);
+    }
+    else
+    {
+        rc = process_task(arguments, memwatch);
+    }
+
+    if (memwatch != NULL)
+        free_memory_watch(memwatch);
+
+    return rc;
 }

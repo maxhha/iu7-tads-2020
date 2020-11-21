@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-// #define LOG_LEVEL NO_LOG
+#define LOG_LEVEL NO_LOG
 #include "macrologger.h"
 
 #if LOG_LEVEL == NO_LOG
@@ -26,6 +26,12 @@
 } while (0)
 #else
 #define LOG_MATRIX(ptr, w, h, fmt)
+#endif
+
+#if LOG_LEVEL < INFO_LEVEL
+#undef LOG_INFO
+#define LOG_INFO(message, ...) \
+fprintf(stderr, "Инфо: " message NEWLINE, ## __VA_ARGS__ )
 #endif
 
 #endif // __LOG_H__

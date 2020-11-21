@@ -8,7 +8,7 @@
 #include "matrix.h"
 #include "smatrix.h"
 
-#define TIME_MEASURE_REPEATS 1000
+#define TIME_MEASURE_REPEATS 100
 #define MICROSEC_PER_SEC 1000000LL
 
 int action_mul_matrix(void);

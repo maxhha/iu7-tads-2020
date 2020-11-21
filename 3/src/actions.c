@@ -204,13 +204,7 @@ int action_measure_matrix_mul(void)
         fill_random_matrix(a, n_row);
         fill_random_matrix(b, n);
 
-        start = clock();
-
         int rc = multiply_row_matrix_by_matrix(a, b, result);
-
-        end = clock();
-
-        time += (double) (end - start) / CLOCKS_PER_SEC * MICROSEC_PER_SEC;
 
         if (rc == EMATRIXMUL)
         {
@@ -229,6 +223,14 @@ int action_measure_matrix_mul(void)
             return OK;
         }
         assert(rc == OK || rc == EMATRIXZERO);
+
+        start = clock();
+
+        multiply_row_matrix_by_matrix(a, b, result);
+
+        end = clock();
+
+        time += (double) (end - start) / CLOCKS_PER_SEC * MICROSEC_PER_SEC;
 
         free_matrix(result);
     }
@@ -328,16 +330,18 @@ int action_measure_smatrix_mul(void)
             return OK;
         }
 
+        // printf("fill random\n");
+
         fill_random_smatrix(a);
         fill_random_smatrix(b);
 
-        start = clock();
+        // printf("first run\n");
 
         int rc = multiply_row_smatrix_by_smatrix(a, b, result);
 
-        end = clock();
-
-        time += (double) (end - start) / CLOCKS_PER_SEC * MICROSEC_PER_SEC;
+        // print_smatrix(a);
+        // print_smatrix(b);
+        // print_smatrix(result);
 
         if (rc == EMATRIXMUL)
         {
@@ -356,6 +360,16 @@ int action_measure_smatrix_mul(void)
             return OK;
         }
         assert(rc == OK || rc == EMATRIXZERO);
+
+        // printf("measure run\n");
+
+        start = clock();
+
+        multiply_row_smatrix_by_smatrix(a, b, result);
+
+        end = clock();
+
+        time += (double) (end - start) / CLOCKS_PER_SEC * MICROSEC_PER_SEC;
 
         free_smatrix(result);
     }

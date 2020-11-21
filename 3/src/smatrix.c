@@ -89,27 +89,89 @@ int cmp_size_t(const void *a, const void *b)
     return sa < sb ? -1 : sa == sb ? 0 : 1;
 }
 
+#include "../inc/matrix.h"
+
 void fill_random_smatrix(smatrix_t *m)
 {
     size_t h = m->height;
     size_t w = m->width;
     size_t n = m->n_elems;
 
+    matrix_t *m2 = create_matrix(w, h);
+
+    if (m2 == NULL)
+    {
+        printf("ooooops\n");
+        exit(1);
+    }
+
+    fill_random_matrix(m2, n);
+
     for (size_t i = 0; i < h; i++)
     {
         m->row_begins[i] = 0;
     }
 
-    for (size_t i = 0; i < n; )
+    m->n_elems = 0;
+
+    for (size_t y = 0; y < h; y++)
     {
-        size_t c = rand() % h;
-        if (m->row_begins[c] < w)
+        for (size_t x = 0; x < w; x++)
         {
-            m->row_begins[c] += 1;
-            m->values[i] = (rand() % 9 + 1) * (rand() % 2 * 2 - 1);
-            i++;
+            if (m2->data[x + y*w] != 0)
+            {
+                m->values[m->n_elems] = m2->data[x + y*w];
+                m->row_begins[y]++;
+                m->columns[m->n_elems] = x;
+                m->n_elems++;
+            }
         }
     }
+
+    for (size_t i = 0, j = 0; i < h; i++)
+    {
+        size_t tmp = m->row_begins[i];
+        m->row_begins[i] = j;
+        j += tmp;
+    }
+
+    free_matrix(m2);
+
+    return;
+    /*
+    printf("here98\n");
+
+    for (size_t i = 0; i < h; i++)
+    {
+        m->row_begins[i] = 0;
+    }
+
+    printf("here105\n");
+
+    for (size_t i = 0; i < n; i++)
+    {
+        m->values[i] = (rand() % 9 + 1) * (rand() % 2 * 2 - 1);
+    }
+
+    for (size_t i = n; i > 0;)
+    {
+        for (size_t x = 0; x < h && i > 0; x++)
+        {
+            size_t c = rand() % w + 1;
+            if (c > i)
+                c = i;
+
+            if (m->row_begins[x] + c > w)
+            {
+                c = w - m->row_begins[x];
+            }
+
+            m->row_begins[x] += c;
+            i -= c;
+        }
+    }
+
+    printf("here118\n");
 
     size_t *cols = malloc(w * sizeof(size_t));
 
@@ -118,6 +180,8 @@ void fill_random_smatrix(smatrix_t *m)
 
     for (size_t i = 0; i < w; i++)
         cols[i] = i;
+
+    printf("here128\n");
 
     for (size_t i = 0, j = 0; i < h; i++)
     {
@@ -138,7 +202,10 @@ void fill_random_smatrix(smatrix_t *m)
         j += tmp;
     }
 
+    printf("here149\n");
+
     free(cols);
+    */
 }
 
 smatrix_t *scan_smatrix(void)

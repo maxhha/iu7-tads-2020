@@ -11,7 +11,7 @@ int TMPL(push_point_to, STACK) (STACK_T *stack, point_t p)
 {
     LOG_DEBUG("push (%d, %d, %d)", p.x, p.y, p.v);
 
-    point_t *point = malloc(sizeof(point_t));
+    point_t *point = wmalloc(stack->mem, MEMPTR_DATA, sizeof(point_t));
 
     if (point == NULL)
     {
@@ -26,7 +26,7 @@ int TMPL(push_point_to, STACK) (STACK_T *stack, point_t p)
     {
         LOG_ERROR("не получилось добавить позицию (%d, %d, %d) в стэк", p.x, p.y, p.v);
 
-        free(point);
+        wfree(stack->mem, point);
         return -1;
     }
 
@@ -70,14 +70,14 @@ int TMPL(push_neighboors_to, STACK)(const map_t *map, STACK_T *stack, point_t p)
 #define CLEAR_POINT_STACK(stack) do { \
     point_t *p; \
     while ((p = TMPL(STACK, pop)(stack)) != NULL) \
-        free(p); \
+        wfree(stack->mem, p); \
 } while(0)
 
 int *TMPL(create_visited_map_using, STACK)(const map_t *map, STACK_T *stack)
 {
     int w = map->width;
     int h = map->height;
-    int *visited = malloc(w * h * sizeof(int));
+    int *visited = wmalloc(stack->mem, MEMPTR_VISITED_MAP, w * h * sizeof(int));
 
     if (visited == NULL)
     {
@@ -98,7 +98,7 @@ int *TMPL(create_visited_map_using, STACK)(const map_t *map, STACK_T *stack)
     {
         LOG_ERROR("не получилось добавить начальную позицию%s", "");
 
-        free(visited);
+        wfree(stack->mem, visited);
         return NULL;
     }
 
@@ -108,7 +108,7 @@ int *TMPL(create_visited_map_using, STACK)(const map_t *map, STACK_T *stack)
     {
         point_t p = *point_ptr;
 
-        free(point_ptr);
+        wfree(stack->mem, point_ptr);
 
         LOG_DEBUG("pop (%d, %d, %d)", p.x, p.y, p.v);
 
@@ -123,14 +123,13 @@ int *TMPL(create_visited_map_using, STACK)(const map_t *map, STACK_T *stack)
             LOG_ERROR("не получилось добавить всех пути из позиции%s", "");
 
             CLEAR_POINT_STACK(stack);
-            free(visited);
+            wfree(stack->mem, visited);
             return NULL;
         }
     }
 
     LOG_DEBUG("visited:%s", "");
     LOG_MATRIX(visited, w, h, "%2d");
-
 
     return visited;
 }
@@ -224,7 +223,7 @@ int TMPL(build_path_using, STACK)(const map_t *map, const int *visited, STACK_T 
         p = min_p;
     }
 
-    point_t *path = malloc(path_len * sizeof(point_t));
+    point_t *path = wmalloc(stack->mem, MEMPTR_PATH, path_len * sizeof(point_t));
 
     if (path == NULL)
     {
@@ -240,7 +239,7 @@ int TMPL(build_path_using, STACK)(const map_t *map, const int *visited, STACK_T 
     while ((p_ptr = TMPL(STACK, pop)(stack)) != NULL)
     {
         path[i] = *p_ptr;
-        free(p_ptr);
+        wfree(stack->mem, p_ptr);
         i++;
     }
 
@@ -264,7 +263,7 @@ int TMPL(get_path_using, STACK)(const map_t *map, STACK_T *stack, point_t **resu
 
     LOG_DEBUG("free visited map%s", "");
 
-    free(visited_map);
+    wfree(stack->mem, visited_map);
 
     LOG_DEBUG("return result path%s", "");
     return rc;

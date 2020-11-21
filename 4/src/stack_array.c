@@ -1,6 +1,6 @@
 #include "../inc/stack_array.h"
 
-stack_array_t *create_stack_array(size_t size)
+stack_array_t *create_stack_array(size_t size, memwatch_t *mem)
 {
     stack_array_t *s = malloc(sizeof(stack_array_t));
 
@@ -11,8 +11,9 @@ stack_array_t *create_stack_array(size_t size)
 
     s->size = size == 0 ? DEFAULT_BUF_SIZE : size;
     s->limit = size != 0;
+    s->mem = mem;
 
-    s->buf = malloc(s->size * sizeof(*s->buf));
+    s->buf = wmalloc(mem, MEMPTR_STACK, s->size * sizeof(*s->buf));
 
     if (s->buf == NULL)
     {
@@ -27,7 +28,7 @@ stack_array_t *create_stack_array(size_t size)
 
 void free_stack_array(stack_array_t *stack)
 {
-    free(stack->buf);
+    wfree(stack->mem, stack->buf);
     free(stack);
 }
 
@@ -39,7 +40,8 @@ int stack_array_push(stack_array_t *stack, void *data)
             return -1;
 
         size_t new_size = stack->size * 2;
-        void **tmp = realloc(stack->buf, new_size * sizeof(*stack->buf));
+        void **tmp = wrealloc(stack->mem, stack->buf, new_size * sizeof(*stack->buf));
+
         if (tmp == NULL)
             return -1;
 
