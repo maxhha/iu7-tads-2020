@@ -2,7 +2,7 @@
 
 stack_list_t *create_stack_list(size_t size, memwatch_t *mem)
 {
-    stack_list_t *stack = malloc(sizeof(stack_list_t));
+    stack_list_t *stack = wmalloc(mem, MEMPTR_STACK, sizeof(stack_list_t));
 
     if (stack == NULL)
         return NULL;
@@ -18,7 +18,7 @@ stack_list_t *create_stack_list(size_t size, memwatch_t *mem)
 
 void free_stack_list(stack_list_t *stack)
 {
-    free(stack);
+    wfree(stack->mem, stack);
 }
 
 int stack_list_push(stack_list_t *stack, void *data)

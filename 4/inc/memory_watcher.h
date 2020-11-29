@@ -5,8 +5,6 @@
 #include <stdarg.h>
 #include "log.h"
 
-#define MEMORY_BATCH_SIZE 128
-
 #define MEMPTR_PREV 0
 #define MEMPTR_UNUSED ' '
 #define MEMPTR_USED '.'
@@ -15,6 +13,8 @@
 #define MEMPTR_PATH 'P'
 #define MEMPTR_VISITED_MAP 'V'
 #define MEMPTR_WATCHER 'W'
+
+#define MEMORY_BATCH_SIZE 128
 
 typedef struct membatch_s membatch_t;
 

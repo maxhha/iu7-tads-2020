@@ -152,23 +152,25 @@ int TMPL(build_path_using, STACK)(const map_t *map, const int *visited, STACK_T 
         return -1;
     }
 
-    int path_len = 0;
+    int path_len = p.v;
+
+    point_t *path = wmalloc(stack->mem, MEMPTR_PATH, path_len * sizeof(point_t));
+
+    if (path == NULL)
+    {
+        LOG_ERROR("не получилось выделить память для массива точек пути%s", "");
+
+        return -1;
+    }
+
+    int path_i = p.v - 1;
 
     LOG_DEBUG("start build path%s", "");
 
     while (p.v != 0)
     {
         LOG_DEBUG("watch %d point", path_len);
-
-        if (TMPL(push_point_to, STACK)(stack, p))
-        {
-            LOG_ERROR("не получилось добавить позицию пути%s", "");
-
-            CLEAR_POINT_STACK(stack);
-            return -1;
-        }
-
-        path_len++;
+        path[path_i--] = p;
 
         point_t min_p = p;
 
@@ -216,31 +218,11 @@ int TMPL(build_path_using, STACK)(const map_t *map, const int *visited, STACK_T 
         {
             LOG_ERROR("не получилось найти более близкую к старту позицию из (%d, %d, %d)", p.x, p.y, p.v);
 
-            CLEAR_POINT_STACK(stack);
+            wfree(stack->mem, path);
             return -1;
         }
 
         p = min_p;
-    }
-
-    point_t *path = wmalloc(stack->mem, MEMPTR_PATH, path_len * sizeof(point_t));
-
-    if (path == NULL)
-    {
-        LOG_ERROR("не получилось выделить память для массива точек пути%s", "");
-
-        CLEAR_POINT_STACK(stack);
-        return -1;
-    }
-
-    point_t *p_ptr;
-    int i = 0;
-
-    while ((p_ptr = TMPL(STACK, pop)(stack)) != NULL)
-    {
-        path[i] = *p_ptr;
-        wfree(stack->mem, p_ptr);
-        i++;
     }
 
     *result_path = path;

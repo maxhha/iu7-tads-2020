@@ -2,7 +2,7 @@
 
 stack_array_t *create_stack_array(size_t size, memwatch_t *mem)
 {
-    stack_array_t *s = malloc(sizeof(stack_array_t));
+    stack_array_t *s = wmalloc(mem, MEMPTR_STACK, sizeof(stack_array_t));
 
     if (s == NULL)
     {
@@ -29,7 +29,7 @@ stack_array_t *create_stack_array(size_t size, memwatch_t *mem)
 void free_stack_array(stack_array_t *stack)
 {
     wfree(stack->mem, stack->buf);
-    free(stack);
+    wfree(stack->mem, stack);
 }
 
 int stack_array_push(stack_array_t *stack, void *data)

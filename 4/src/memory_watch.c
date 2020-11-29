@@ -225,6 +225,8 @@ int memwatch_grow(memwatch_t *m, size_t start, size_t size)
         prev_b = b_new;
     }
 
+    memwatch_set(m, (size_t) m, sizeof(*m), MEMPTR_WATCHER);
+
     for (membatch_t *b = m->head; b != NULL; b = b->next)
         memwatch_set(m, (size_t) b, sizeof(*b), MEMPTR_WATCHER);
 
@@ -237,7 +239,7 @@ void memwatch_print_batches(memwatch_t *m, int n, ...)
 
     for (membatch_t *b = m->head; b != NULL; b = b->next)
     {
-        fprintf(stderr, "%14p [", (void *) b->start);
+        fprintf(stderr, "%14p [", (void *) (b->start * sizeof(void **)));
 
         for (size_t i = 0; i < MEMORY_BATCH_SIZE; i++)
         {

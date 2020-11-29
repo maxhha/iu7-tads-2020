@@ -45,7 +45,7 @@ static struct argp_option options[] = {
         OPTKEY_MAPOUTPUT,
         0,
         OPTION_ARG_OPTIONAL,
-        "Записать путь в виде карты, а не списком координат",
+        "Записать путь в виде карты",
     },
     {
         "stack",
@@ -220,50 +220,41 @@ int process_task(struct arguments arguments, memwatch_t *memwatch)
         return EXIT_FAILURE;
     }
 
-    if (arguments.output_format == FORMAT_COORDS)
+    if (arguments.fileout == NULL)
     {
-        if (arguments.fileout == NULL)
+        for (int i = 0; i < path_len; i++)
+            printf("%d %d\n", path[i].x, path[i].y);
+
+        if (arguments.output_format == FORMAT_MAP)
         {
-            for (int i = 0; i < path_len; i++)
-                printf("%d %d\n", path[i].x, path[i].y);
-        }
-        else
-        {
-            FILE *f = fopen(arguments.fileout, "w");
-
-            if (f == NULL)
-            {
-                LOG_ERROR("не получилось открыть файл для записи%s", "");
-                LOG_ERROR("не получилось записать координаты в файл%s", "");
-
-                wfree(memwatch, path);
-                free_map(map);
-                return EXIT_FAILURE;
-            }
-
-            for (int i = 0; i < path_len; i++)
-                fprintf(f, "%d %d\n", path[i].x, path[i].y);
-
-            fclose(f);
+            printf("\n");
+            print_map_with_path(stdout, map, path, path_len);
         }
     }
     else
     {
-        if (arguments.fileout == NULL)
-        {
-            print_map_with_path(stdout, map, path, path_len);
-        }
-        else
-        {
-            if (print_map_with_path_to_file(arguments.filein, map, path, path_len))
-            {
-                LOG_ERROR("не получилось записать карту в файл%s", "");
+        FILE *f = fopen(arguments.fileout, "w");
 
-                wfree(memwatch, path);
-                free_map(map);
-                return EXIT_FAILURE;
-            }
+        if (f == NULL)
+        {
+            LOG_ERROR("не получилось открыть файл для записи%s", "");
+            LOG_ERROR("не получилось записать координаты в файл%s", "");
+
+            wfree(memwatch, path);
+            free_map(map);
+            return EXIT_FAILURE;
         }
+
+        for (int i = 0; i < path_len; i++)
+            fprintf(f, "%d %d\n", path[i].x, path[i].y);
+
+        if (arguments.output_format == FORMAT_MAP)
+        {
+            fprintf(f, "\n");
+            print_map_with_path(f, map, path, path_len);
+        }
+
+        fclose(f);
     }
 
     wfree(memwatch, path);
