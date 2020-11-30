@@ -139,6 +139,47 @@ void action_set_time_ranges(action_params_t *params)
     READ_TIME_RANGE(buf, buf_size, "T4:", params->t4_from, params->t4_to);
 }
 
+void action_measure_queue(action_params_t params)
+{
+    printf("Введите количество элементов:\n");
+
+    char *buf = NULL;
+    size_t buf_size = 0;
+
+    if (getline(&buf, &buf_size, stdin) < 0)
+    {
+        if (buf)
+            free(buf);
+
+        printf(RED "Не получилось считать строку" RESET "\n");
+        return;
+    }
+
+    int n;
+
+    if (sscanf(buf, "%d", &n) != 1 || n <= 0)
+    {
+        printf(RED "Неправильный выбор" RESET "\n");
+        free(buf);
+        return;
+    }
+    free(buf);
+
+    uint64_t pop_ticks, push_ticks;
+    int rc = params.type == LIST ?
+        measure_time_of_queue_list(n, &push_ticks, &pop_ticks) : \
+        measure_time_of_queue_array(n, &push_ticks, &pop_ticks);
+
+    if (rc)
+    {
+        printf(RED "Во время измерений произошла ошибка" RESET "\n");
+        return;
+    }
+
+    printf("Добавление: %lu тиков\n", push_ticks);
+    printf("Чтение: %lu тиков\n", push_ticks);
+}
+
 void action_process(action_params_t params)
 {
     simulation_result_t result = params.type == LIST ? \

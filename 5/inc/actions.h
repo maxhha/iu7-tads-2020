@@ -4,6 +4,7 @@
 #include "memory_watcher.h"
 #include "colors.h"
 #include "log.h"
+#include "measure.h"
 
 typedef struct {
     enum { LIST = 1, ARRAY = 2} type;
@@ -26,6 +27,7 @@ void print_action_params(action_params_t);
 void action_set_time_ranges(action_params_t *params);
 void action_set_address(action_params_t *params);
 void action_change_type(action_params_t *params);
+void action_measure_queue(action_params_t params);
 void action_process(action_params_t);
 
 #endif // __ACTIONS_H__

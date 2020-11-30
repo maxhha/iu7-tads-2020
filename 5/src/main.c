@@ -1,13 +1,5 @@
 #include "../inc/main.h"
 
-/*
-- [x] установить тип очереди (массив/стек)
-- [ ] установить время
-- [ ] замерить ли время работы (и сколько раз мерять)
-- [ ] выводить ли адреса
-- [x] запустить
-*/
-
 #define PROMPT_ACTION(act, desc) \
     printf("  %-*s" YEL " - " desc RESET "\n", MENU_ACTION_LEN, act)
 
@@ -36,6 +28,7 @@ void print_prompt(action_params_t params)
     PROMPT_ACTION(MENU_ACTION_TYPE, "изменить тип очереди");
     PROMPT_ACTION(MENU_ACTION_ADDRESS, "изменить отображение адресов");
     PROMPT_ACTION(MENU_ACTION_TIME, "изменить времена обработки");
+    PROMPT_ACTION(MENU_ACTION_MEASURE, "замерить время работы очереди");
     PROMPT_ACTION(MENU_ACTION_PROCESS, "запустить моделирование");
     PROMPT_ACTION(MENU_ACTION_QUIT, "выйти");
 }
@@ -72,6 +65,7 @@ int main(void)
         ACT_IF_EQUALS(action, MENU_ACTION_TIME, action_set_time_ranges, &params)
         ACT_IF_EQUALS(action, MENU_ACTION_TYPE, action_change_type, &params)
         ACT_IF_EQUALS(action, MENU_ACTION_ADDRESS, action_set_address, &params)
+        ACT_IF_EQUALS(action, MENU_ACTION_MEASURE, action_measure_queue, params)
         ACT_IF_EQUALS(action, MENU_ACTION_PROCESS, action_process, params)
 
         if (strcmp(action, MENU_ACTION_QUIT) == 0)
