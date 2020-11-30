@@ -57,10 +57,11 @@ COROUNTINE_T *TMPL(get_next_corountine, Q)(COROUNTINE_T *corountines, int n)
 void TMPL(print_current_result_for, Q)(simulation_result_t *result)
 {
     printf("\n");
-    printf("Общее время: %0.3lf\n", result->time_sim);
-    printf("тип      1  \t   2\n");
-    printf("вошло %4d\t%4d\n", result->in_orders1, result->in_orders2);
-    printf("вышло %4d\t%4d\n", result->out_orders1, result->out_orders2);
+    printf("тип       1  \t   2\n");
+    printf("вошло  " YEL "%4d" RESET "\t" YEL "%4d" RESET "\n", result->in_orders1, result->in_orders2);
+    printf("вышло  " YEL "%4d" RESET "\t" YEL "%4d" RESET "\n", result->out_orders1, result->out_orders2);
+    printf("Общее время: " YEL "%0.3lf" RESET "\n", result->time_sim);
+
 }
 
 double TMPL(process_order_using, Q)(TMPL(Q, corountines_args_t) *args)

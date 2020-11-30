@@ -147,11 +147,19 @@ void action_process(action_params_t params)
 
     LOG_DEBUG("result->error = %d", result.error);
 
-    printf("error: %d\n", result.error);
-    printf("in_orders1: %d\n", result.in_orders1);
-    printf("in_orders2: %d\n", result.in_orders2);
-    printf("out_orders1: %d\n", result.out_orders1);
-    printf("out_orders2: %d\n", result.out_orders2);
-    printf("time_wait: %.0lf\n", result.time_wait);
-    printf("time_work: %.0lf\n", result.time_work);
+    if (result.error)
+    {
+        printf(RED "Произошла ошибка во время моделирования" RESET "\n");
+        return;
+    }
+
+    printf("\n");
+    printf("-------------------------------------------------------------\n");
+    printf("Вошло заявок 1 типа: " YEL "%d" RESET "\n", result.in_orders1);
+    printf("Вошло заявок 2 типа: " YEL "%d" RESET "\n", result.in_orders2);
+    printf("Вышло заявок 1 типа: " YEL "%d" RESET "\n", result.out_orders1);
+    printf("Вышло заявок 2 типа: " YEL "%d" RESET "\n", result.out_orders2);
+    printf("Время ожидания аппарата: " YEL "%.0lf" RESET "\n", result.time_wait);
+    printf("Время работы аппарата:   " YEL "%.0lf" RESET "\n", result.time_work);
+    printf("Время моделирования:     " YEL "%.0lf" RESET "\n", result.time_sim);
 }
