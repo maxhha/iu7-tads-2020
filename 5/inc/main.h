@@ -4,12 +4,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include "log.h"
 #include "colors.h"
 #include "actions.h"
 
-#define MENU_ACTION_LEN 1
+#define MENU_ACTION_LEN 4
 #define MENU_ACTION_QUIT "q"
-#define MENU_ACTION_PROCESS "r"
+#define MENU_ACTION_PROCESS "run"
+#define MENU_ACTION_TYPE "type"
 
 #endif // __MAIN_H__

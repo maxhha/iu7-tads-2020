@@ -9,6 +9,7 @@ queue_list_t *create_queue_list(memwatch_t *mem)
 
     q->last = NULL;
     q->first = NULL;
+    q->mem = mem;
 
     return q;
 }
@@ -29,7 +30,11 @@ int push_queue_list(queue_list_t *q, void *data)
         return -1;
 
     l->data = data;
-    l->next = q->last;
+    l->next = NULL;
+
+    if (q->last)
+        q->last->next = l;
+    
     q->last = l;
 
     if (q->first == NULL)
@@ -52,18 +57,4 @@ void *pop_queue_list(queue_list_t *q)
     wfree(q->mem, l);
 
     return data;
-}
-
-int get_len_of_queue_list(queue_list_t *q)
-{
-    list_t *l = q->first;
-    int n = 0;
-
-    while (l != NULL)
-    {
-        l = l->next;
-        n++;
-    }
-
-    return n;
 }

@@ -3,8 +3,8 @@
 action_params_t init_action_params(void)
 {
     action_params_t p = {
-        .mem = NULL,
-        .type = LIST,
+        .mem = NULL, // create_memory_watch(),//
+        .type = ARRAY,
         .t1_from = 1,
         .t1_to = 5,
         .t2_from = 0,
@@ -17,11 +17,52 @@ action_params_t init_action_params(void)
     return p;
 }
 
+void print_action_params(action_params_t p)
+{
+    printf("Тип очереди: " YEL "%s" RESET "\n", p.type == ARRAY ? "вектор" : "список");
+    printf("Выводить адреса: " YEL "%s" RESET "\n", p.mem ? "да" : "нет");
+    printf("T1: " YEL "%.1lf..%.1lf" RESET "\n", p.t1_from, p.t1_to);
+    printf("T2: " YEL "%.1lf..%.1lf" RESET "\n", p.t2_from, p.t2_to);
+    printf("T3: " YEL "%.1lf..%.1lf" RESET "\n", p.t3_from, p.t3_to);
+    printf("T4: " YEL "%.1lf..%.1lf" RESET "\n", p.t4_from, p.t4_to);
+}
+
+void action_change_type(action_params_t *params)
+{
+    printf("%d" YEL " - использовать cписок" RESET "\n", LIST);
+    printf("%d" YEL " - использовать вектор" RESET "\n", ARRAY);
+    printf("Выбор:\n");
+
+    char *buf = NULL;
+    size_t buf_size = 0;
+
+    if (getline(&buf, &buf_size, stdin) < 0)
+    {
+        if (buf)
+            free(buf);
+
+        printf(RED "Не получилось считать строку" RESET "\n");
+        return;
+    }
+
+    int x;
+
+    if (sscanf(buf, "%d", &x) != 1 || !(x == ARRAY || x == LIST))
+    {
+        printf(RED "Неправильный выбор" RESET "\n");
+        free(buf);
+        return;
+    }
+    free(buf);
+
+    params->type = x;
+}
 
 void action_process(action_params_t params)
 {
-    // simulation_result_t result = params.type == LIST ? simulate_using_queue_list(params)
-    simulation_result_t result = simulate_using_queue_list(params);
+    simulation_result_t result = params.type == LIST ? \
+        simulate_using_queue_list(params) : \
+        simulate_using_queue_array(params);
 
     LOG_DEBUG("result->error = %d", result.error);
 

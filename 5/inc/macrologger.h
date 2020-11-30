@@ -16,7 +16,7 @@
 
 #define PRINTFUNCTION(format, ...)      fprintf(stderr, format, __VA_ARGS__ )
 
-#define LOG_FMT             "%-7s | %-15s | %21s:%-3d | "
+#define LOG_FMT             "%-7s | %-20s | %60s:%-3d | "
 #define LOG_ARGS(LOG_TAG)   LOG_TAG, _FILE, __func__, __LINE__
 
 #define NEWLINE     "\n"

@@ -5,11 +5,12 @@
 
 // #define LOG_LEVEL NO_LOG
 #include "macrologger.h"
+#include "colors.h"
 
 #if LOG_LEVEL == NO_LOG
 #undef LOG_ERROR
 #define LOG_ERROR(message, ...) \
-    fprintf(stderr, "Ошибка: " message NEWLINE, ## __VA_ARGS__ )
+    fprintf(stderr, RED "Ошибка: " message RESET NEWLINE, ## __VA_ARGS__ )
 #endif
 
 #if LOG_LEVEL < INFO_LEVEL

@@ -2,10 +2,11 @@
 #define __ACTIONS_H__
 
 #include "memory_watcher.h"
+#include "colors.h"
 #include "log.h"
 
 typedef struct {
-    enum { ARRAY, LIST} type;
+    enum { LIST = 1, ARRAY = 2} type;
     double t1_from;
     double t1_to;
     double t2_from;
@@ -20,7 +21,9 @@ typedef struct {
 #include "simulation.h"
 
 action_params_t init_action_params(void);
+void print_action_params(action_params_t);
 
+void action_change_type(action_params_t *params);
 void action_process(action_params_t);
 
 #endif // __ACTIONS_H__

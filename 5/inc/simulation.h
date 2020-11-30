@@ -8,6 +8,7 @@
 #include "template.h"
 #include "actions.h"
 #include "queue_list.h"
+#include "queue_array.h"
 
 #define SIMULATION_LIMIT_Q1 1000
 #define SIMULATION_SHOW_STATUS_EVERY 100
@@ -29,5 +30,6 @@ typedef struct {
 } order_t;
 
 simulation_result_t simulate_using_queue_list(action_params_t params);
+simulation_result_t simulate_using_queue_array(action_params_t params);
 
 #endif // __SIMULATION_H__

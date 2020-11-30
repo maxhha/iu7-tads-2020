@@ -22,6 +22,5 @@ queue_list_t *create_queue_list(memwatch_t *mem);
 void free_queue_list(queue_list_t *queue);
 int push_queue_list(queue_list_t *queue, void *data);
 void *pop_queue_list(queue_list_t *queue);
-int get_len_of_queue_list(queue_list_t *queue);
 
 #endif // __QUEUE_LIST_H__
