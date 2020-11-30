@@ -30,11 +30,68 @@ struct TMPL(Q, corountines_args_s) {
     Q_T *q2;
     int prev;
     COROUNTINE_T *corountines;
+    order_t *order;
 };
+
+COROUNTINE_T *TMPL(get_next_corountine, Q)(COROUNTINE_T *corountines, int n)
+{
+    COROUNTINE_T *min_cor = corountines;
+    double min_time = corountines[0].time;
+
+    for (int i = 0; i < n; i++)
+    {
+        LOG_DEBUG("corountines[%i].time = %lf", i, corountines[i].time);
+        if (min_time > corountines[i].time)
+        {
+            min_time = corountines[i].time;
+            min_cor = corountines + i;
+        }
+    }
+
+    LOG_DEBUG("min_time = %lf", min_time);
+    LOG_DEBUG("cor_i = %d", (int) (min_cor - corountines));
+
+    return min_cor;
+}
+
+void TMPL(print_current_result_for, Q)(simulation_result_t *result)
+{
+    printf("\n");
+    printf("Общее время: %0.3lf\n", result->time_sim);
+    printf("тип      1  \t   2\n");
+    printf("вошло %4d\t%4d\n", result->in_orders1, result->in_orders2);
+    printf("вышло %4d\t%4d\n", result->out_orders1, result->out_orders2);
+}
 
 double TMPL(process_order_using, Q)(TMPL(Q, corountines_args_t) *args)
 {
     LOG_DEBUG("start%s", "");
+
+    if (args->order)
+    {
+        LOG_DEBUG("finish order%d #%d", args->order->type, args->order->number);
+
+        args->prev = args->order->type;
+
+        wfree(args->params->mem, args->order);
+
+        args->order = NULL;
+
+        if (args->prev == 1)
+        {
+            args->result->out_orders1++;
+
+            if (args->result->out_orders1 % SIMULATION_SHOW_STATUS_EVERY == 0)
+                TMPL(print_current_result_for, Q)(args->result);
+        }
+        else
+            args->result->out_orders2++;
+
+        return 0;
+    }
+
+    LOG_DEBUG("check for new order%s", "");
+
     order_t *order = args->prev == 1 ? TMPL(pop, Q)(args->q1) : TMPL(pop, Q)(args->q2);
 
     if (!order)
@@ -44,36 +101,19 @@ double TMPL(process_order_using, Q)(TMPL(Q, corountines_args_t) *args)
     {
         LOG_DEBUG("nothing to process%s", "");
 
-        double min_time = args->corountines[0].time;
-
-        for (int i = 0; i < COROUNTINES_N - 1; i++)
-        {
-            LOG_DEBUG("corountines[%i].time = %lf", i, args->corountines[i].time);
-            if (min_time > args->corountines[i].time)
-            {
-                min_time = args->corountines[i].time;
-            }
-        }
-
-        double time_wait = min_time - args->corountines[2].time;
+        double time_wait = TMPL(get_next_corountine, Q)(args->corountines, 2)->time - args->corountines[2].time;
 
         args->result->time_wait += time_wait;
         return time_wait;
     }
 
-    LOG_DEBUG("process order%d #%d", order->type, order->number);
+    LOG_DEBUG("start process order%d #%d", order->type, order->number);
 
-    double time_work = (args->prev = order->type) == 1 ? \
+    double time_work = order->type == 1 ? \
         RAND_TIME(args->params->t3_from, args->params->t3_to) : \
         RAND_TIME(args->params->t4_from, args->params->t4_to);
 
-    if (order->type == 1)
-        args->result->out_orders1++;
-    else
-        args->result->out_orders2++;
-
-    wfree(args->params->mem, order);
-
+    args->order = order;
     args->result->time_work += time_work;
 
     return time_work;
@@ -175,45 +215,21 @@ simulation_result_t TMPL(simulate_using, Q)(action_params_t params)
         .q2 = q2,
         .prev = 1,
         .corountines = corountines,
+        .order = NULL,
     };
 
-    while (!res.error)
+    while (res.out_orders1 < SIMULATION_LIMIT_Q1 && !res.error)
     {
-        COROUNTINE_T *min_cor = corountines;
-        double min_time = corountines[0].time;
-
-        for (int i = 0; i < COROUNTINES_N; i++)
-        {
-            LOG_DEBUG("corountines[%i].time = %lf", i, corountines[i].time);
-            if (min_time > corountines[i].time)
-            {
-                min_time = corountines[i].time;
-                min_cor = corountines + i;
-            }
-        }
-
-        LOG_DEBUG("min_time = %lf", min_time);
-        LOG_DEBUG("cor_i = %d", (int) (min_cor - corountines));
+        COROUNTINE_T *min_cor = TMPL(get_next_corountine, Q)(corountines, COROUNTINES_N);
+        double min_time = min_cor->time;
 
         res.time_sim = min_time;
-
-        if (res.out_orders1 >= SIMULATION_LIMIT_Q1 && (min_cor - corountines) == 2)
-            break;
 
         double cor_time = min_cor->callback(&cor_args);
         LOG_DEBUG("cor_time = %lf", cor_time);
 
         min_cor->time += cor_time;
         LOG_DEBUG("min_cor->time = %lf", min_cor->time);
-
-        if (res.out_orders1 && res.out_orders1 % SIMULATION_SHOW_STATUS_EVERY == 0)
-        {
-            printf("\n");
-            printf("Общее время: %0.3lf\n", res.time_sim);
-            printf("тип      1  \t   2\n");
-            printf("вошло %4d\t%4d\n", res.in_orders1, res.in_orders2);
-            printf("вышло %4d\t%4d\n", res.out_orders1, res.out_orders2);
-        }
 
         if (params.mem)
         {
@@ -231,6 +247,9 @@ simulation_result_t TMPL(simulate_using, Q)(action_params_t params)
 
     for (order_t *order = TMPL(pop, Q)(q2); order; order = TMPL(pop, Q)(q2))
         wfree(params.mem, order);
+
+    if (cor_args.order)
+        wfree(params.mem, cor_args.order);
 
     TMPL(free, Q)(q1);
     TMPL(free, Q)(q2);
