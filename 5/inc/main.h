@@ -14,5 +14,6 @@
 #define MENU_ACTION_PROCESS "run"
 #define MENU_ACTION_TYPE "type"
 #define MENU_ACTION_ADDRESS "addr"
+#define MENU_ACTION_TIME "time"
 
 #endif // __MAIN_H__

@@ -99,6 +99,46 @@ void action_set_address(action_params_t *params)
     }
 }
 
+#define READ_TIME_RANGE(buf, buf_size, msg, from, to) do { \
+    printf(msg); \
+    if (getline(&buf, &buf_size, stdin) < 0) \
+    { \
+        if (buf) \
+            free(buf); \
+        printf(RED "Не получилось считать строку" RESET "\n"); \
+        return; \
+    } \
+    if (sscanf(buf, "%lf%lf", &(from), &(to)) != 2) \
+    { \
+        printf(RED "Неправильный ввод" RESET "\n"); \
+        continue; \
+    } \
+    if ((from) < 0 || (to) < 0) \
+    { \
+        printf(RED "Значения должны быть неотрицательными" RESET "\n"); \
+        continue; \
+    } \
+    if ((from) > (to)) \
+    { \
+        printf(RED "Первое значение должно быть неменьше второго" RESET "\n"); \
+        continue; \
+    } \
+    break; \
+} while(1)
+
+void action_set_time_ranges(action_params_t *params)
+{
+    char *buf = NULL;
+    size_t buf_size = 0;
+
+    printf("Вводите мин. и макс. значение времени через пробел:\n");
+
+    READ_TIME_RANGE(buf, buf_size, "T1:", params->t1_from, params->t1_to);
+    READ_TIME_RANGE(buf, buf_size, "T2:", params->t2_from, params->t2_to);
+    READ_TIME_RANGE(buf, buf_size, "T3:", params->t3_from, params->t3_to);
+    READ_TIME_RANGE(buf, buf_size, "T4:", params->t4_from, params->t4_to);
+}
+
 void action_process(action_params_t params)
 {
     simulation_result_t result = params.type == LIST ? \
