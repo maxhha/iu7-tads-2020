@@ -3,7 +3,7 @@
 action_params_t init_action_params(void)
 {
     action_params_t p = {
-        .mem = NULL, // create_memory_watch(),//
+        .mem = NULL,
         .type = ARRAY,
         .t1_from = 1,
         .t1_to = 5,
@@ -56,6 +56,47 @@ void action_change_type(action_params_t *params)
     free(buf);
 
     params->type = x;
+}
+
+void action_set_address(action_params_t *params)
+{
+    printf("Выводить адреса памяти:\n");
+    printf("1" YEL " - да" RESET "\n");
+    printf("2" YEL " - нет" RESET "\n");
+    printf("Выбор:\n");
+
+    char *buf = NULL;
+    size_t buf_size = 0;
+
+    if (getline(&buf, &buf_size, stdin) < 0)
+    {
+        if (buf)
+            free(buf);
+
+        printf(RED "Не получилось считать строку" RESET "\n");
+        return;
+    }
+
+    int x;
+
+    if (sscanf(buf, "%d", &x) != 1 || !(x == 1 || x == 2))
+    {
+        printf(RED "Неправильный выбор" RESET "\n");
+        free(buf);
+        return;
+    }
+    free(buf);
+
+    if ((x == 1 && params->mem) || (x == 2 && !params->mem))
+        return;
+
+    if (x == 1)
+        params->mem = create_memory_watch();
+    else
+    {
+        free_memory_watch(params->mem);
+        params->mem = NULL;
+    }
 }
 
 void action_process(action_params_t params)

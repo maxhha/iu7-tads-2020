@@ -34,6 +34,7 @@ void print_prompt(action_params_t params)
     printf("\n");
     printf("Действия:\n");
     PROMPT_ACTION(MENU_ACTION_TYPE, "изменить тип очереди");
+    PROMPT_ACTION(MENU_ACTION_ADDRESS, "изменить тип очереди");
     PROMPT_ACTION(MENU_ACTION_PROCESS, "запустить моделирование");
     PROMPT_ACTION(MENU_ACTION_QUIT, "выйти");
 }
@@ -41,7 +42,7 @@ void print_prompt(action_params_t params)
 int main(void)
 {
     srand(time(NULL));
-    
+
     char *action = NULL;
     size_t action_size = 0;
 
@@ -68,6 +69,7 @@ int main(void)
         LOG_DEBUG("action = \"%s\"", action);
 
         ACT_IF_EQUALS(action, MENU_ACTION_TYPE, action_change_type, &params)
+        ACT_IF_EQUALS(action, MENU_ACTION_ADDRESS, action_set_address, &params)
         ACT_IF_EQUALS(action, MENU_ACTION_PROCESS, action_process, params)
         if (strcmp(action, MENU_ACTION_QUIT) == 0)
             continue;

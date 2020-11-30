@@ -23,6 +23,7 @@ typedef struct {
 action_params_t init_action_params(void);
 void print_action_params(action_params_t);
 
+void action_set_address(action_params_t *params);
 void action_change_type(action_params_t *params);
 void action_process(action_params_t);
 
