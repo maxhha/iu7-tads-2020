@@ -5,51 +5,49 @@
 #endif
 
 #define Q_T TMPL(Q, t)
-#define COROUNTINE_T TMPL(Q, corountine_t)
-
-#define MIN(a,b) ((a) < (b) ? (a) : (b))
+#define COROUTINE_T TMPL(Q, coroutine_t)
 
 #define COROUNTINES_N 3
 
 #define RAND_TIME(t1,t2) \
     ((double) rand() / RAND_MAX * ((t2) - (t1)) + (t1))
 
-typedef struct TMPL(Q, corountines_args_s) TMPL(Q, corountines_args_t);
+typedef struct TMPL(Q, coroutines_args_s) TMPL(Q, coroutines_args_t);
 
-typedef double (*TMPL(callback_using, Q))(TMPL(Q, corountines_args_t) *args);
+typedef double (*TMPL(callback_using, Q))(TMPL(Q, coroutines_args_t) *args);
 
 typedef struct {
     TMPL(callback_using, Q) callback;
     double time;
-} COROUNTINE_T;
+} COROUTINE_T;
 
-struct TMPL(Q, corountines_args_s) {
+struct TMPL(Q, coroutines_args_s) {
     action_params_t *params;
     simulation_result_t *result;
     Q_T *q1;
     Q_T *q2;
     int prev;
-    COROUNTINE_T *corountines;
+    COROUTINE_T *coroutines;
     order_t *order;
 };
 
-COROUNTINE_T *TMPL(get_next_corountine, Q)(COROUNTINE_T *corountines, int n)
+COROUTINE_T *TMPL(get_next_coroutine, Q)(COROUTINE_T *coroutines, int n)
 {
-    COROUNTINE_T *min_cor = corountines;
-    double min_time = corountines[0].time;
+    COROUTINE_T *min_cor = coroutines;
+    double min_time = coroutines[0].time;
 
     for (int i = 0; i < n; i++)
     {
-        LOG_DEBUG("corountines[%i].time = %lf", i, corountines[i].time);
-        if (min_time > corountines[i].time)
+        LOG_DEBUG("coroutines[%i].time = %lf", i, coroutines[i].time);
+        if (min_time > coroutines[i].time)
         {
-            min_time = corountines[i].time;
-            min_cor = corountines + i;
+            min_time = coroutines[i].time;
+            min_cor = coroutines + i;
         }
     }
 
     LOG_DEBUG("min_time = %lf", min_time);
-    LOG_DEBUG("cor_i = %d", (int) (min_cor - corountines));
+    LOG_DEBUG("cor_i = %d", (int) (min_cor - coroutines));
 
     return min_cor;
 }
@@ -64,7 +62,7 @@ void TMPL(print_current_result_for, Q)(simulation_result_t *result)
 
 }
 
-double TMPL(process_order_using, Q)(TMPL(Q, corountines_args_t) *args)
+double TMPL(process_order_using, Q)(TMPL(Q, coroutines_args_t) *args)
 {
     LOG_DEBUG("start%s", "");
 
@@ -102,7 +100,7 @@ double TMPL(process_order_using, Q)(TMPL(Q, corountines_args_t) *args)
     {
         LOG_DEBUG("nothing to process%s", "");
 
-        double time_wait = TMPL(get_next_corountine, Q)(args->corountines, 2)->time - args->corountines[2].time;
+        double time_wait = TMPL(get_next_coroutine, Q)(args->coroutines, 2)->time - args->coroutines[2].time;
 
         args->result->time_wait += time_wait;
         return time_wait;
@@ -145,7 +143,7 @@ int TMPL(push_order_using, Q)(memwatch_t *mem, Q_T *q, int type, int number)
     return 0;
 }
 
-double TMPL(push_order1_using, Q)(TMPL(Q, corountines_args_t) *args)
+double TMPL(push_order1_using, Q)(TMPL(Q, coroutines_args_t) *args)
 {
     LOG_DEBUG("start%s", "");
 
@@ -161,7 +159,7 @@ double TMPL(push_order1_using, Q)(TMPL(Q, corountines_args_t) *args)
     return RAND_TIME(args->params->t1_from, args->params->t1_to);
 }
 
-double TMPL(push_order2_using, Q)(TMPL(Q, corountines_args_t) *args)
+double TMPL(push_order2_using, Q)(TMPL(Q, coroutines_args_t) *args)
 {
     LOG_DEBUG("start%s", "");
 
@@ -193,7 +191,7 @@ simulation_result_t TMPL(simulate_using, Q)(action_params_t params)
         return res;
     }
 
-    COROUNTINE_T corountines[COROUNTINES_N] = {
+    COROUTINE_T coroutines[COROUNTINES_N] = {
         {
             .callback = TMPL(push_order1_using, Q),
             .time = RAND_TIME(params.t1_from, params.t1_to),
@@ -204,24 +202,23 @@ simulation_result_t TMPL(simulate_using, Q)(action_params_t params)
         },
         {
             .callback = TMPL(process_order_using, Q),
+            .time = 0,
         },
     };
 
-    res.time_wait = corountines[2].time = MIN(corountines[0].time, corountines[1].time);
-
-    TMPL(Q, corountines_args_t) cor_args = {
+    TMPL(Q, coroutines_args_t) cor_args = {
         .params = &params,
         .result = &res,
         .q1 = q1,
         .q2 = q2,
         .prev = 1,
-        .corountines = corountines,
+        .coroutines = coroutines,
         .order = NULL,
     };
 
     while (res.out_orders1 < SIMULATION_LIMIT_Q1 && !res.error)
     {
-        COROUNTINE_T *min_cor = TMPL(get_next_corountine, Q)(corountines, COROUNTINES_N);
+        COROUTINE_T *min_cor = TMPL(get_next_coroutine, Q)(coroutines, COROUNTINES_N);
         double min_time = min_cor->time;
 
         res.time_sim = min_time;
@@ -260,6 +257,5 @@ simulation_result_t TMPL(simulate_using, Q)(action_params_t params)
 
 #undef COROUNTINES_N
 #undef RAND_TIME
-#undef COROUNTINE_T
+#undef COROUTINE_T
 #undef Q_T
-#undef MIN

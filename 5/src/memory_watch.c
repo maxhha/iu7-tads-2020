@@ -14,6 +14,7 @@ struct membatch_s {
 
 struct memwatch_s {
     membatch_t *head;
+    size_t free_space;
 };
 
 membatch_t *create_batch(size_t start)
@@ -34,7 +35,7 @@ membatch_t *create_batch(size_t start)
     return b;
 }
 
-memwatch_t *create_memory_watch(void)
+memwatch_t *create_memory_watch(size_t limit)
 {
     memwatch_t *m = malloc(sizeof(memwatch_t));
 
@@ -50,6 +51,8 @@ memwatch_t *create_memory_watch(void)
         free(m);
         return NULL;
     }
+
+    m->free_space = limit;
 
     return m;
 }
@@ -96,17 +99,10 @@ size_t memwatch_get_size(memwatch_t *m, size_t x)
         b = b->next;
 
     if (b == NULL)
-    {
-        LOG_DEBUG("cant find %p", (void *) x);
         return 0;
-    }
-
-    LOG_DEBUG("x = %p", (void *) x);
 
     x = x - b->start + 1;
 
-    LOG_DEBUG("b->start = %p", (void *) b->start);
-    LOG_DEBUG("x = %lu", x);
 
     while (b != NULL && b->pointers[x] == MEMPTR_PREV)
     {
@@ -120,8 +116,6 @@ size_t memwatch_get_size(memwatch_t *m, size_t x)
         }
     }
 
-    LOG_DEBUG("size = %lu", size);
-
     return size * sizeof(void **);
 }
 
@@ -130,17 +124,10 @@ void memwatch_set(memwatch_t *m, size_t start, size_t size, char type)
     size_t end = (start + size + sizeof(void **) - 1) / sizeof(void **);
     start /= sizeof(void **);
 
-    LOG_DEBUG("start = %p", (void *) start);
-    LOG_DEBUG("end = %p", (void *) end);
-
     for (membatch_t *b = m->head; b != NULL; b = b->next)
     {
         size_t u_from = CLAMP(start, b->start, MEMORY_BATCH_SIZE + b->start) - b->start;
         size_t u_to = CLAMP(end, b->start, MEMORY_BATCH_SIZE + b->start) - b->start;
-
-        LOG_DEBUG("b->start = %p", (void *) b->start);
-        LOG_DEBUG("u_from = %lu", u_from);
-        LOG_DEBUG("u_to = %lu", u_to);
 
         if (u_from == u_to)
             continue;
@@ -171,16 +158,11 @@ int memwatch_grow(memwatch_t *m, size_t start, size_t size)
     size_t end = (start + size + sizeof(void **) - 1) / sizeof(void **);
     start /= sizeof(void **);
 
-    LOG_DEBUG("start = %p", (void *) start);
-    LOG_DEBUG("end = %p", (void *) end);
-
     membatch_t *b = m->head;
     membatch_t *prev_b = NULL;
 
     for (size_t i = start / MEMORY_BATCH_SIZE * MEMORY_BATCH_SIZE; i <= end; i += MEMORY_BATCH_SIZE)
     {
-        LOG_DEBUG("check %p batch", (void *) i);
-
         while (b != NULL && b->start != 0 && b->start < i)
         {
             prev_b = b;
@@ -189,8 +171,6 @@ int memwatch_grow(memwatch_t *m, size_t start, size_t size)
 
         if (b == NULL)
         {
-            LOG_DEBUG("add to end%s", "");
-
             b = create_batch(i);
 
             if (b == NULL)
@@ -210,18 +190,14 @@ int memwatch_grow(memwatch_t *m, size_t start, size_t size)
 
         if (b->start == 0)
         {
-            LOG_DEBUG("set b->start = %p", (void *) i);
             b->start = i;
             continue;
         }
 
         if (b->start == i)
         {
-            LOG_DEBUG("exists%s", "");
             continue;
         }
-
-        LOG_DEBUG("create after %p before %p", (void *) prev_b->start, (void *) b->start);
 
         membatch_t *b_new = create_batch(i);
 
@@ -299,20 +275,32 @@ void memwatch_print_batches(memwatch_t *m, int n, ...)
 
 void *wmalloc(memwatch_t *m, char type, size_t size)
 {
-    void *ptr = malloc(size);
-
     if (m == NULL)
-        return ptr;
-
-    if (ptr == NULL)
-        return NULL;
+        return malloc(size);
 
     fprintf(stderr, "=== memory watcher ===\n");
+
+    if (size > m->free_space)
+    {
+        LOG_ERROR("превышен объем выделенной памяти%s", "");
+        return NULL;
+    }
+
+    void *ptr = malloc(size);
     fprintf(stderr, "malloc(%lu) -> %p\n", size, ptr);
+
+    if (ptr == NULL)
+    {
+        fprintf(stderr, "=== memory watcher ===\n\n");
+        return NULL;
+    }
+
+    m->free_space -= size;
 
     if (memwatch_grow(m, (size_t) ptr, size) == EXIT_FAILURE)
     {
         free(ptr);
+        fprintf(stderr, "=== memory watcher ===\n\n");
         return NULL;
     }
 
@@ -326,17 +314,34 @@ void *wmalloc(memwatch_t *m, char type, size_t size)
 
 void *wrealloc(memwatch_t *m, void *ptr, size_t new_size)
 {
-    LOG_DEBUG("ptr = %p, new_size = %lu", ptr, new_size);
-    void *p = realloc(ptr, new_size);
-
     if (m == NULL)
-        return p;
+        return realloc(ptr, new_size);
 
     fprintf(stderr, "=== memory watcher ===\n");
+
+    size_t size = memwatch_get_size(m, (size_t) ptr);
+
+    if (new_size > m->free_space + size)
+    {
+        LOG_ERROR("превышен объем выделенной памяти%s", "");
+        fprintf(stderr, "=== memory watcher ===\n");
+        return NULL;
+    }
+
+    void *p = realloc(ptr, new_size);
+
     fprintf(stderr, "realloc(%p, %lu) -> %p\n", ptr, new_size, p);
 
+    if (p == NULL)
+    {
+        fprintf(stderr, "=== memory watcher ===\n");
+        return NULL;
+    }
+
+    m->free_space += size;
+    m->free_space -= new_size;
+
     char type = memwatch_get_type(m, (size_t) ptr);
-    size_t size = memwatch_get_size(m, (size_t) ptr);
 
     memwatch_set(m, (size_t) ptr, size, MEMPTR_USED);
     memwatch_grow(m, (size_t) p, new_size);
@@ -360,6 +365,8 @@ void wfree(memwatch_t *m, void *ptr)
     fprintf(stderr, "free(%p)\n", ptr);
 
     size_t size = memwatch_get_size(m, (size_t) ptr);
+
+    m->free_space += size;
 
     memwatch_set(m, (size_t) ptr, size, MEMPTR_USED);
 

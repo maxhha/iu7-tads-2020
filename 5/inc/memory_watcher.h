@@ -18,7 +18,7 @@
 
 typedef struct memwatch_s memwatch_t;
 
-memwatch_t *create_memory_watch(void);
+memwatch_t *create_memory_watch(size_t limit);
 void free_memory_watch(memwatch_t *w);
 
 void *wmalloc(memwatch_t *w, char type, size_t size);

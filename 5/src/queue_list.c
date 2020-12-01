@@ -34,7 +34,7 @@ int push_queue_list(queue_list_t *q, void *data)
 
     if (q->last)
         q->last->next = l;
-    
+
     q->last = l;
 
     if (q->first == NULL)
