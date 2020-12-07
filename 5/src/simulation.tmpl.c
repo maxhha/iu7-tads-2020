@@ -228,14 +228,6 @@ simulation_result_t TMPL(simulate_using, Q)(action_params_t params)
 
         min_cor->time += cor_time;
         LOG_DEBUG("min_cor->time = %lf", min_cor->time);
-
-        if (params.mem)
-        {
-            char c;
-            printf("\n---------------- pause ----------------\n\n");
-            if (scanf("%c", &c) == 1 && c == 'q')
-                break;
-        }
     }
 
     LOG_DEBUG("free rest orders%s", "");

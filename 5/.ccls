@@ -5,3 +5,4 @@ gcc
 -Wfloat-equal
 -Wfloat-conversion
 -Wpedantic
+-lm

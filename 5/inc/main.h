@@ -16,5 +16,6 @@
 #define MENU_ACTION_ADDRESS "addr"
 #define MENU_ACTION_TIME "tt"
 #define MENU_ACTION_MEASURE "t"
+#define MENU_ACTION_LIMIT "mem"
 
 #endif // __MAIN_H__

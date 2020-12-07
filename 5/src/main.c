@@ -27,6 +27,7 @@ void print_prompt(action_params_t params)
     printf("Действия:\n");
     PROMPT_ACTION(MENU_ACTION_TYPE, "изменить тип очереди");
     PROMPT_ACTION(MENU_ACTION_ADDRESS, "изменить отображение адресов");
+    PROMPT_ACTION(MENU_ACTION_LIMIT, "изменить ограничение памяти");
     PROMPT_ACTION(MENU_ACTION_TIME, "изменить времена обработки");
     PROMPT_ACTION(MENU_ACTION_MEASURE, "замерить время работы очереди");
     PROMPT_ACTION(MENU_ACTION_PROCESS, "запустить моделирование");
@@ -65,6 +66,7 @@ int main(void)
         ACT_IF_EQUALS(action, MENU_ACTION_TIME, action_set_time_ranges, &params)
         ACT_IF_EQUALS(action, MENU_ACTION_TYPE, action_change_type, &params)
         ACT_IF_EQUALS(action, MENU_ACTION_ADDRESS, action_set_address, &params)
+        ACT_IF_EQUALS(action, MENU_ACTION_LIMIT, action_set_free_mem, &params)
         ACT_IF_EQUALS(action, MENU_ACTION_MEASURE, action_measure_queue, params)
         ACT_IF_EQUALS(action, MENU_ACTION_PROCESS, action_process, params)
 

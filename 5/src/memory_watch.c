@@ -15,6 +15,7 @@ struct membatch_s {
 struct memwatch_s {
     membatch_t *head;
     size_t free_space;
+    int show;
 };
 
 membatch_t *create_batch(size_t start)
@@ -273,12 +274,36 @@ void memwatch_print_batches(memwatch_t *m, int n, ...)
     }
 }
 
+void pause(void)
+{
+    char c;
+    scanf("%c", &c);
+}
+
+void memwatch_set_show(memwatch_t *m, int show)
+{
+    m->show = show;
+}
+
+int memwatch_get_show(memwatch_t *m)
+{
+    return m->show;
+}
+
+void memwatch_set_free_space(memwatch_t *m, size_t free_space)
+{
+    m->free_space = free_space;
+}
+
+size_t memwatch_get_free_space(memwatch_t *m)
+{
+    return m->free_space;
+}
+
 void *wmalloc(memwatch_t *m, char type, size_t size)
 {
     if (m == NULL)
         return malloc(size);
-
-    fprintf(stderr, "=== memory watcher ===\n");
 
     if (size > m->free_space)
     {
@@ -287,27 +312,30 @@ void *wmalloc(memwatch_t *m, char type, size_t size)
     }
 
     void *ptr = malloc(size);
-    fprintf(stderr, "malloc(%lu) -> %p\n", size, ptr);
 
-    if (ptr == NULL)
+    if (!ptr)
+        return NULL;
+
+    if (memwatch_grow(m, (size_t) ptr, size) == EXIT_FAILURE)
     {
-        fprintf(stderr, "=== memory watcher ===\n\n");
+        free(ptr);
         return NULL;
     }
 
     m->free_space -= size;
 
-    if (memwatch_grow(m, (size_t) ptr, size) == EXIT_FAILURE)
-    {
-        free(ptr);
-        fprintf(stderr, "=== memory watcher ===\n\n");
-        return NULL;
-    }
-
     memwatch_set(m, (size_t) ptr, size, type);
+
+    if (!m->show)
+        return ptr;
+
+    fprintf(stderr, "=== memory watcher ===\n");
+    fprintf(stderr, "malloc(%lu) -> %p\n", size, ptr);
+
     memwatch_print_batches(m, 1, (size_t) ptr, size);
 
-    fprintf(stderr, "=== memory watcher ===\n\n");
+    fprintf(stderr, "=== memory watcher ===\n");
+    pause();
 
     return ptr;
 }
@@ -317,39 +345,43 @@ void *wrealloc(memwatch_t *m, void *ptr, size_t new_size)
     if (m == NULL)
         return realloc(ptr, new_size);
 
-    fprintf(stderr, "=== memory watcher ===\n");
-
     size_t size = memwatch_get_size(m, (size_t) ptr);
 
     if (new_size > m->free_space + size)
     {
         LOG_ERROR("превышен объем выделенной памяти%s", "");
-        fprintf(stderr, "=== memory watcher ===\n");
         return NULL;
     }
 
     void *p = realloc(ptr, new_size);
 
-    fprintf(stderr, "realloc(%p, %lu) -> %p\n", ptr, new_size, p);
-
     if (p == NULL)
+        return p;
+
+    if (memwatch_grow(m, (size_t) p, new_size) == EXIT_FAILURE)
     {
-        fprintf(stderr, "=== memory watcher ===\n");
+        ptr = realloc(ptr, size);
         return NULL;
     }
-
-    m->free_space += size;
-    m->free_space -= new_size;
 
     char type = memwatch_get_type(m, (size_t) ptr);
 
     memwatch_set(m, (size_t) ptr, size, MEMPTR_USED);
-    memwatch_grow(m, (size_t) p, new_size);
     memwatch_set(m, (size_t) p, new_size, type);
+
+    m->free_space += size;
+    m->free_space -= new_size;
+
+    if (!m->show)
+        return p;
+
+    fprintf(stderr, "=== memory watcher ===\n");
+    fprintf(stderr, "realloc(%p, %lu) -> %p\n", ptr, new_size, p);
 
     memwatch_print_batches(m, 2, (size_t) p, new_size, (size_t) ptr, size);
 
-    fprintf(stderr, "=== memory watcher ===\n\n");
+    fprintf(stderr, "=== memory watcher ===\n");
+    pause();
 
     return p;
 }
@@ -361,16 +393,18 @@ void wfree(memwatch_t *m, void *ptr)
     if (m == NULL)
         return;
 
+    size_t size = memwatch_get_size(m, (size_t) ptr);
+    m->free_space += size;
+    memwatch_set(m, (size_t) ptr, size, MEMPTR_USED);
+
+    if (!m->show)
+        return;
+
     fprintf(stderr, "=== memory watcher ===\n");
     fprintf(stderr, "free(%p)\n", ptr);
 
-    size_t size = memwatch_get_size(m, (size_t) ptr);
-
-    m->free_space += size;
-
-    memwatch_set(m, (size_t) ptr, size, MEMPTR_USED);
-
     memwatch_print_batches(m, 1, (size_t) ptr, size);
 
-    fprintf(stderr, "=== memory watcher ===\n\n");
+    fprintf(stderr, "=== memory watcher ===\n");
+    pause();
 }

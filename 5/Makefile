@@ -19,7 +19,7 @@ run : app.exe
 	./app.exe $(args)
 
 app.exe : $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ -lm
 
 debug func: CFLAGS += -g -fno-inline -fno-omit-frame-pointer -O0 --coverage
 debug : all

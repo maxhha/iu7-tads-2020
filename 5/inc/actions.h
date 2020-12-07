@@ -1,6 +1,7 @@
 #ifndef __ACTIONS_H__
 #define __ACTIONS_H__
 
+#include <math.h>
 #include "memory_watcher.h"
 #include "colors.h"
 #include "log.h"
@@ -26,6 +27,7 @@ void print_action_params(action_params_t);
 
 void action_set_time_ranges(action_params_t *params);
 void action_set_address(action_params_t *params);
+void action_set_free_mem(action_params_t *params);
 void action_change_type(action_params_t *params);
 void action_measure_queue(action_params_t params);
 void action_process(action_params_t);
