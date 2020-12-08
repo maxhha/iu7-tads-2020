@@ -1,5 +1,12 @@
 #include "main.h"
 
+uint64_t ticks(void)
+{
+    uint64_t x;
+    __asm__ volatile ("rdtsc\n\tshl $32, %%rdx\n\tor %%rdx, %%rax" : "=a" (x) : : "rdx");
+    return x;
+}
+
 int is_prime(unsigned int num)
 {
     if (num <= 1)
@@ -27,6 +34,7 @@ int next_prime(int n)
 int read_tree_from_file(char *filename, tree_t **default_tree)
 {
     FILE *f = fopen(filename, "r");
+    uint64_t start, end;
 
     if (f == NULL)
     {
@@ -34,7 +42,9 @@ int read_tree_from_file(char *filename, tree_t **default_tree)
         return EXIT_FAILURE;
     }
 
+    start = ticks();
     *default_tree = read_to_tree(f);
+    end = ticks();
     fclose(f);
 
     if (*default_tree == NULL)
@@ -42,6 +52,12 @@ int read_tree_from_file(char *filename, tree_t **default_tree)
         LOG_ERROR("дерево пустое%s", "");
         return EXIT_FAILURE;
     }
+
+    printf(YEL "ДДП из файла:\n\n" RESET);
+    print_tree(*default_tree);
+    printf("\n");
+
+    printf(YEL "Время построения дерева:" RESET " %lu тактов\n\n", end - start);
 
     return EXIT_SUCCESS;
 }
@@ -57,6 +73,7 @@ int count_numbers_in_file(FILE *f)
 
 int read_hashtable_from_file(char *filename, hashtable_t **table)
 {
+    uint64_t start, end;
     FILE *f = fopen(filename, "r");
 
     if (f == NULL)
@@ -69,7 +86,10 @@ int read_hashtable_from_file(char *filename, hashtable_t **table)
     size = next_prime(size + 1);
 
     rewind(f);
+
+    start = ticks();
     *table = read_to_hashtable(f, simple_hash, size);
+    end = ticks();
 
     fclose(f);
 
@@ -80,11 +100,17 @@ int read_hashtable_from_file(char *filename, hashtable_t **table)
         return EXIT_FAILURE;
     }
 
+    printf(YEL "Хеш таблица с простой функцией хеширования:\n\n" RESET);
+    print_hashtable(*table);
+    printf("Среднее число коллизий: %d\n", (*table)->n_collisions / get_hashtable_count_items(*table));
+    printf(YEL "Время построения хеш таблицы: " RESET "%lu тактов\n\n", end - start);
+
     return EXIT_SUCCESS;
 }
 
 int restructure_hashtable_by_entered_collosions(hashtable_t **table)
 {
+    uint64_t start, end;
     int target_avg_collisions = 10;
 
     #ifndef DEBUG
@@ -110,7 +136,9 @@ int restructure_hashtable_by_entered_collosions(hashtable_t **table)
 
     while (target_avg_collisions < avg_collisions)
     {
+        start = ticks();
         hashtable_t *new_table = restructure_hashtable(*table, complex_hash, new_size);
+        end = ticks();
 
         if (new_table == NULL)
         {
@@ -128,6 +156,7 @@ int restructure_hashtable_by_entered_collosions(hashtable_t **table)
     printf(YEL "Хеш таблица c сложной функцией хэширования:\n" RESET);
     print_hashtable(*table);
     printf("Среднее число коллизий: %d\n", avg_collisions);
+    printf(YEL "Время реструктуризации хеш таблицы:" RESET " %lu тактов\n\n", end - start);
 
     return EXIT_SUCCESS;
 }
@@ -183,6 +212,7 @@ int remove_element_from_file(char *filename, int val)
 
 int remove_element(char *filename, tree_t **default_tree, tree_t **balanced_tree, hashtable_t **table)
 {
+    uint64_t start, end;
     int x = 944;
 
     printf(YEL "Введите элемент для удаления:" RESET "\n");
@@ -201,21 +231,33 @@ int remove_element(char *filename, tree_t **default_tree, tree_t **balanced_tree
     }
     #endif
 
+    start = ticks();
     *default_tree = delete_element_from_tree(*default_tree, x);
+    end = ticks();
 
     printf(YEL "ДДП из файла после удаления элемента:\n\n" RESET);
     print_tree(*default_tree);
+    printf(YEL "Время удаления из ДДП: " RESET "%lu тактов\n\n", end - start);
 
+    start = ticks();
     *balanced_tree = delete_element_from_balanced_tree(*balanced_tree, x);
+    end = ticks();
 
     printf(YEL "Сбалансированное дерево после удаления элемента:\n\n" RESET);
     print_tree(*balanced_tree);
+    printf(YEL "Время удаления из сбаланисированного дерева:" RESET " %lu тактов\n\n", end - start);
+
+    start = ticks();
+    delete_element_from_hashtable(*table, x);
+    end = ticks();
 
     printf(YEL "Хеш таблица после удаления элемента:\n\n" RESET);
-    delete_element_from_hashtable(*table, x);
     print_hashtable(*table);
+    printf(YEL "Время удаления из хеш таблицы:" RESET " %lu тактов\n\n", end - start);
 
+    start = ticks();
     int rc = remove_element_from_file(filename, x);
+    end = ticks();
 
     if (rc)
     {
@@ -224,6 +266,7 @@ int remove_element(char *filename, tree_t **default_tree, tree_t **balanced_tree
     }
 
     printf(YEL "Элемент удалён из файла" RESET "\n");
+    printf(YEL "Время удаления из файла:" RESET " %lu тактов\n\n", end - start);
 
     return EXIT_SUCCESS;
 }
@@ -231,6 +274,7 @@ int remove_element(char *filename, tree_t **default_tree, tree_t **balanced_tree
 int main(int argc, char **argv)
 {
     char *filename;
+    uint64_t start, end;
 
     #ifndef DEBUG
         if (argc != 2)
@@ -251,10 +295,6 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    printf(YEL "ДДП из файла:\n\n" RESET);
-    print_tree(default_tree);
-    printf("\n");
-
     tree_t *balanced_tree;
 
     if (copy_tree(default_tree, &balanced_tree))
@@ -264,11 +304,14 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
+    start = ticks();
     balanced_tree = balance_tree(balanced_tree);
+    end = ticks();
 
     printf(YEL "Сбалансированное дерево:\n\n" RESET);
     print_tree(balanced_tree);
     printf("\n");
+    printf(YEL "Время балансирования дерева:" RESET " %lu тактов\n\n", end - start);
 
     hashtable_t *table;
 
@@ -278,10 +321,6 @@ int main(int argc, char **argv)
         free_tree(balanced_tree);
         return EXIT_FAILURE;
     }
-
-    printf(YEL "Хеш таблица с простой функцией хеширования:\n\n" RESET);
-    print_hashtable(table);
-    printf("Среднее число коллизий: %d\n", table->n_collisions / get_hashtable_count_items(table));
 
     if (restructure_hashtable_by_entered_collosions(&table))
     {
