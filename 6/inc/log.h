@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-// #define LOG_LEVEL NO_LOG
+#define LOG_LEVEL NO_LOG
 #include "macrologger.h"
 #include "colors.h"
 

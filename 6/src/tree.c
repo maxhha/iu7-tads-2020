@@ -1,5 +1,7 @@
 #include "tree.h"
 
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+
 tree_t *create_tree(int x)
 {
     tree_t *root = malloc(sizeof(tree_t));
@@ -13,6 +15,7 @@ tree_t *create_tree(int x)
     root->left = NULL;
     root->right = NULL;
     root->val = x;
+    root->height = 1;
 
     return root;
 }
@@ -54,30 +57,21 @@ int copy_tree(tree_t *root, tree_t **new_root)
 
 tree_t *tree_add(tree_t *root, int x)
 {
-    tree_t *p = root;
-    tree_t **target = &root;
+    if (root == NULL)
+        return create_tree(x);
 
-    while (p)
+    LOG_DEBUG("cmp %d %d", p->val, x);
+
+    if (x < root->val)
     {
-        LOG_DEBUG("cmp %d %d", p->val, x);
-
-        if (x < p->val)
-        {
-            target = &p->left;
-            p = p->left;
-        }
-        else if (x > p->val)
-        {
-            target = &p->right;
-            p = p->right;
-        }
-        else
-        {
-            return root;
-        }
+        root->left = tree_add(root->left, x);
+        root->height = MAX(1 + root->left->height, root->height);
     }
-
-    *target = create_tree(x);
+    else if (x > root->val)
+    {
+        root->right = tree_add(root->right, x);
+        root->height = MAX(1 + root->right->height, root->height);
+    }
 
     return root;
 }
@@ -240,6 +234,11 @@ tree_t *split_bamboo(tree_t *root)
     return new_root;
 }
 
+int get_height(tree_t *root)
+{
+    return root == NULL ? 0 : root->height;
+}
+
 tree_t *balance_bamboo(tree_t *root)
 {
     if (root == NULL)
@@ -259,6 +258,8 @@ tree_t *balance_bamboo(tree_t *root)
 
     root->left = balance_tree(root->left);
     root->right = balance_tree(root->right);
+
+    root->height = 1 + MAX(get_height(root->left), get_height(root->right));
 
     return root;
 }
@@ -290,6 +291,8 @@ tree_t *balance_tree(tree_t *root)
     root->left = balance_bamboo(root->left);
     root->right = balance_bamboo(root->right);
 
+    root->height = 1 + MAX(get_height(root->left), get_height(root->right));
+
     return root;
 }
 
@@ -314,6 +317,13 @@ tree_t *get_min_value_element(tree_t *root)
     while (p && p->left != NULL)
        p = p->left;
     return p;
+}
+
+int get_tree_balance(tree_t *root)
+{
+    if (root == NULL)
+        return 0;
+    return get_height(root->left) - get_height(root->right);
 }
 
 tree_t *delete_element_from_tree(tree_t* root, int val)
@@ -342,6 +352,102 @@ tree_t *delete_element_from_tree(tree_t* root, int val)
         tree_t *temp = get_min_value_element(root->right);
         root->val = temp->val;
         root->right = delete_element_from_tree(root->right, temp->val);
-   }
-   return root;
+    }
+
+    root->height = 1 + MAX(get_height(root->left), get_height(root->right));
+
+    return root;
+}
+
+tree_t *rotate_tree_right(tree_t *root)
+{
+    tree_t *p = root->left;
+    tree_t *t = p->right;
+
+    p->right = root;
+    root->left = t;
+
+    root->height = MAX(get_height(root->left), get_height(root->right)) + 1;
+    p->height = MAX(get_height(p->left), get_height(p->right)) + 1;
+
+    return p;
+}
+
+tree_t *rotate_tree_left(tree_t *root)
+{
+    tree_t *p = root->right;
+    tree_t *t = p->left;
+
+    p->left = root;
+    root->right = t;
+
+    root->height = MAX(get_height(root->left), get_height(root->right)) + 1;
+    p->height = MAX(get_height(p->left), get_height(p->right)) + 1;
+
+    return p;
+}
+
+tree_t *delete_element_from_balanced_tree(tree_t* root, int val)
+{
+    if (root == NULL)
+        return root;
+
+    if (val < root->val)
+        root->left = delete_element_from_balanced_tree(root->left, val);
+    else if(val > root->val)
+        root->right = delete_element_from_balanced_tree(root->right, val);
+    else
+    {
+        if(root->left == NULL || root->right == NULL)
+        {
+            tree_t *temp = root->left ?
+                root->left :
+                root->right;
+
+            if (temp == NULL)
+            {
+                temp = root;
+                root = NULL;
+            }
+            else
+                *root = *temp;
+
+            free(temp);
+        }
+        else
+        {
+            tree_t* temp = get_min_value_element(root->right);
+
+            root->val = temp->val;
+
+            root->right = delete_element_from_balanced_tree(root->right, temp->val);
+        }
+    }
+
+    if (root == NULL)
+        return root;
+
+    root->height = 1 + MAX(get_height(root->left), get_height(root->right));
+
+    int balance = get_tree_balance(root);
+
+    if (balance > 1 && get_tree_balance(root->left) >= 0)
+        return rotate_tree_right(root);
+
+    if (balance > 1 && get_tree_balance(root->left) < 0)
+    {
+        root->left = rotate_tree_left(root->left);
+        return rotate_tree_right(root);
+    }
+
+    if (balance < -1 && get_tree_balance(root->right) <= 0)
+        return rotate_tree_left(root);
+
+    if (balance < -1 && get_tree_balance(root->right) > 0)
+    {
+        root->right = rotate_tree_right(root->right);
+        return rotate_tree_left(root);
+    }
+
+    return root;
 }

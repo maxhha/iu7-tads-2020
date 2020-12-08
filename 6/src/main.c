@@ -159,6 +159,11 @@ int remove_element(tree_t **default_tree, tree_t **balanced_tree, hashtable_t **
     printf(YEL "ДДП из файла после удаления элемента:\n\n" RESET);
     print_tree(*default_tree);
 
+    *balanced_tree = delete_element_from_balanced_tree(*balanced_tree, x);
+
+    printf(YEL "Сбалансированное дерево после удаления элемента:\n\n" RESET);
+    print_tree(*balanced_tree);
+
     return EXIT_SUCCESS;
 }
 
