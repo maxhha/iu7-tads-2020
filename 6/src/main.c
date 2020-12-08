@@ -85,21 +85,18 @@ int read_hashtable_from_file(char *filename, hashtable_t **table)
 
 int restructure_hashtable_by_entered_collosions(hashtable_t **table)
 {
-    int target_avg_collisions = 10, rc = 1;
+    int target_avg_collisions = 10;
 
     #ifndef DEBUG
-    do
+    printf(YEL "Введите среднее количество коллизий:" RESET "\n");
+
+    if (scanf("%d", &target_avg_collisions) != 1 || target_avg_collisions < 0)
     {
-        if (rc != 1 || target_avg_collisions < 1)
-            printf(RED "Неправильное число" RESET "\n");
-
-        printf(YEL "Введите среднее количество коллизий:" RESET "\n");
-
-    } while((rc = scanf("%d", &target_avg_collisions)) != 1 && rc >= 0);
+        printf(RED "Неправильное число" RESET "\n");
+        return EXIT_FAILURE;
+    }
     #endif
 
-    if (rc < 0)
-        return EXIT_FAILURE;
 
     int avg_collisions = (*table)->n_collisions;
     avg_collisions /= get_hashtable_count_items(*table);
@@ -131,28 +128,30 @@ int restructure_hashtable_by_entered_collosions(hashtable_t **table)
 
     printf(YEL "Хеш таблица c сложной функцией хэширования:\n" RESET);
     print_hashtable(*table);
+    printf("Среднее число коллизий: %d\n", avg_collisions);
 
     return EXIT_SUCCESS;
 }
 
-int remove_element(tree_t **default_tree, tree_t **balanced_tree, hashtable_t **table)
+int remove_element(char *filename, tree_t **default_tree, tree_t **balanced_tree, hashtable_t **table)
 {
-    int rc = 1, x = 944;
+    int x = 944;
 
     printf(YEL "Введите элемент для удаления:" RESET "\n");
 
     #ifndef DEBUG
-    while((rc = scanf("%d", &x)) != 1 && rc >= 0 && find_tree_val(*balanced_tree, x) == NULL)
+    if (scanf("%d", &x) != 1)
     {
-        if (rc != 1)
-            printf(RED "Неправильное число" RESET "\n");
-        else if (find_tree_val(*balanced_tree, x) == NULL)
-            printf(RED "Нет такого элемента в файле" RESET "\n");
+        printf(RED "Неправильное число" RESET "\n");
+        return EXIT_FAILURE;
+    }
+
+    if (find_tree_val(*balanced_tree, x) == NULL)
+    {
+        printf(RED "Нет такого элемента в файле" RESET "\n");
+        return EXIT_FAILURE;
     }
     #endif
-
-    if (rc < 0)
-        return EXIT_FAILURE;
 
     *default_tree = delete_element_from_tree(*default_tree, x);
 
@@ -163,6 +162,10 @@ int remove_element(tree_t **default_tree, tree_t **balanced_tree, hashtable_t **
 
     printf(YEL "Сбалансированное дерево после удаления элемента:\n\n" RESET);
     print_tree(*balanced_tree);
+
+    printf(YEL "Хеш таблица после удаления элемента:\n\n" RESET);
+    delete_element_from_hashtable(*table, x);
+    print_hashtable(*table);
 
     return EXIT_SUCCESS;
 }
@@ -218,7 +221,9 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
+    printf(YEL "Хеш таблица с простой функцией хеширования:\n\n" RESET);
     print_hashtable(table);
+    printf("Среднее число коллизий: %d\n", table->n_collisions / get_hashtable_count_items(table));
 
     if (restructure_hashtable_by_entered_collosions(&table))
     {
@@ -228,7 +233,7 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    if (remove_element(&default_tree, &balanced_tree, &table))
+    if (remove_element(filename, &default_tree, &balanced_tree, &table))
     {
         free_tree(default_tree);
         free_tree(balanced_tree);

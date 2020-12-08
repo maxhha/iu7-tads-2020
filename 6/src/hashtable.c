@@ -1,5 +1,7 @@
 #include "hashtable.h"
 
+#define HASHPROB(a) (a)
+
 size_t simple_hash(int x)
 {
     return x;
@@ -61,7 +63,7 @@ int add_to_hashtable(hashtable_t *table, int x)
 
     for (int a = 0; a < table->size; a++)
     {
-        int i = (h + a * a) % table->size;
+        int i = (h + HASHPROB(a)) % table->size;
         LOG_DEBUG("i = %d", i);
 
         if (table->items[i] == NULL)
@@ -119,7 +121,6 @@ int get_hashtable_count_items(hashtable_t *table)
 void print_hashtable(hashtable_t *table)
 {
     int key_len = snprintf(NULL, 0, "%d", table->size - 1);
-    int n = 0;
 
     printf("{\n");
 
@@ -130,14 +131,9 @@ void print_hashtable(hashtable_t *table)
         if (table->items[i] == NULL)
             printf("_\n");
         else
-        {
             printf("%d\n", *table->items[i]);
-            n++;
-        }
     }
     printf("}\n");
-
-    printf("Среднее число коллизий: %.0lf\n", (double) table->n_collisions / n);
 }
 
 hashtable_t *restructure_hashtable(hashtable_t *table, hashfunc_t new_hash, int new_size)
@@ -159,4 +155,22 @@ hashtable_t *restructure_hashtable(hashtable_t *table, hashfunc_t new_hash, int 
     }
 
     return new_table;
+}
+
+void delete_element_from_hashtable(hashtable_t *table, int x)
+{
+    int h = table->hash(x) % table->size;
+
+    for (int a = 0; a < table->size; a++)
+    {
+        int i = (h + HASHPROB(a)) % table->size;
+        int *item = table->items[i];
+
+        if (item != NULL && *item == x)
+        {
+            free(item);
+            table->items[i] = NULL;
+            return;
+        }
+    }
 }

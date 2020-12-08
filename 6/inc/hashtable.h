@@ -28,5 +28,6 @@ void print_hashtable(hashtable_t *table);
 int get_hashtable_count_items(hashtable_t *table);
 
 hashtable_t *restructure_hashtable(hashtable_t *table, hashfunc_t new_hash, int new_size);
+void delete_element_from_hashtable(hashtable_t *table, int x);
 
 #endif // __HASHTABLE_H__
