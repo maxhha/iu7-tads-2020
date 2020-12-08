@@ -1,19 +1,5 @@
 from random import shuffle, randint
 
-FILE="in.txt"
-MAX = 999
-KEEP = 20
-
-data = list(range(1, MAX+1))
-
-shuffle(data)
-
-data = data[:KEEP]
-
-with open(FILE, "w") as f:
-    for i in data:
-        f.write(str(i) + '\n')
-
 def is_prime(num):
     if (num <= 1):
         return 0;
@@ -38,7 +24,23 @@ def next_prime(n):
 
     return prime;
 
-hashtable_size = next_prime(KEEP * 13 // 10 + 1)
+FILE="in.txt"
+MAX = 999
+KEEP = 20
+
+data = list(range(1, MAX+1, next_prime(KEEP + 1)))
+
+shuffle(data)
+
+data = data[:KEEP]
+
+with open(FILE, "w") as f:
+    for i in data:
+        f.write(str(i) + '\n')
+
+
+
+hashtable_size = next_prime(KEEP + 1)
 
 def get_rand_params():
     return [
@@ -46,7 +48,7 @@ def get_rand_params():
         for i in range(12)]
 
 template = """
-x = (((x + 0x{:4x}) & 0xFFFF) + ((x << {:d}) & 0xFFFF)) & 0xFFFF;
+x = (((x + 0x{:x}) & 0xFFFF) + ((x << {:d}) & 0xFFFF)) & 0xFFFF;
 x = ((x ^ 0x{:x}) ^ (x >> {:d})) & 0xFFFF;
 x = (((x + 0x{:x}) & 0xFFFF) + ((x << {:d}) & 0xFFFF)) & 0xFFFF;
 x = (((x + 0x{:x}) & 0xFFFF) ^ ((x << {:d}) & 0xFFFF)) & 0xFFFF;
@@ -84,7 +86,7 @@ for _ in range(5000):
         best_func = code
         best_score = score
         best_hashes = hashes
-        best_params
+        best_params = params
 
 print("//", len(set(i % hashtable_size for i in data)), "vs", best_score)
 print("// hashes:", best_hashes)
@@ -96,4 +98,4 @@ for i in data:
     exec(best_func, None, None)
     print(" =", x % hashtable_size)
 
-print(c_template.format(best_params))
+print(c_template.format(*best_params))

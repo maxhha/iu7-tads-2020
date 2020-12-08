@@ -66,10 +66,10 @@ int read_hashtable_from_file(char *filename, hashtable_t **table)
     }
 
     int size = count_numbers_in_file(f);
-    size = next_prime(size * 13 / 10 + 1);
+    size = next_prime(size + 1);
 
     rewind(f);
-    *table = read_to_hashtable(f, 1 ? complex_hash : simple_hash, size);
+    *table = read_to_hashtable(f, simple_hash, size);
 
     fclose(f);
 
@@ -134,13 +134,57 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    printf(YEL "Хеш таблица:\n" RESET);
+    printf(YEL "Хеш таблица c простой функцией хэширования:\n" RESET);
     print_hashtable(table);
+
+    int target_n_collsions = 1, rc = 1;
+
+    do
+    {
+        if (rc != 1 || target_n_collsions < 1)
+            printf(RED "Неправильное число" RESET "\n");
+
+        printf(YEL "Введите среднее количество коллизий:" RESET "\n");
+
+    } while((rc = scanf("%d", &target_n_collsions)) != 1 && rc >= 0);
+
+    if (rc < 0)
+    {
+        free_tree(default_tree);
+        free_tree(balanced_tree);
+        free_hashtable(table);
+        return EXIT_FAILURE;
+    }
+
+    target_n_collsions *= get_hashtable_count_items(table);
+
+    if (target_n_collsions < table->n_collisions)
+    {
+        while (target_n_collsions < table->n_collisions)
+        {
+            int new_size = table->hash == simple_hash ? table->size : next_prime(table->size);
+            hashtable_t *new_table = restructure_hashtable(table, complex_hash, new_size);
+
+            if (new_table == NULL)
+            {
+                LOG_ERROR("не удалось реструктуризировать%s", "");
+                free_tree(default_tree);
+                free_tree(balanced_tree);
+                free_hashtable(table);
+                return EXIT_FAILURE;
+            }
+            
+            free_hashtable(table);
+            table = new_table;
+        }
+
+        printf(YEL "Хеш таблица c сложной функцией хэширования:\n" RESET);
+        print_hashtable(table);
+    }
 
     free_tree(default_tree);
     free_tree(balanced_tree);
     free_hashtable(table);
-
 
     return EXIT_SUCCESS;
 }
