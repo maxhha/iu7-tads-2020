@@ -97,7 +97,6 @@ int restructure_hashtable_by_entered_collosions(hashtable_t **table)
     }
     #endif
 
-
     int avg_collisions = (*table)->n_collisions;
     avg_collisions /= get_hashtable_count_items(*table);
 
@@ -129,6 +128,55 @@ int restructure_hashtable_by_entered_collosions(hashtable_t **table)
     printf(YEL "Хеш таблица c сложной функцией хэширования:\n" RESET);
     print_hashtable(*table);
     printf("Среднее число коллизий: %d\n", avg_collisions);
+
+    return EXIT_SUCCESS;
+}
+
+int remove_element_from_file(char *filename, int val)
+{
+    FILE *f = fopen(filename, "r+");
+
+    if (f == NULL)
+    {
+        LOG_ERROR("не получилось открыть файл%s", "");
+        return EXIT_FAILURE;
+    }
+
+    int i = 0, j = 0, x;
+
+    while (fscanf(f, "%d", &x) == 1)
+    {
+        if (x == val)
+        {
+            j = ftell(f) + 1;
+            continue;
+        }
+
+        if (j == i)
+        {
+            i = j = ftell(f) + 1;
+            continue;
+        }
+
+        j = ftell(f) + 1;
+
+        fseek(f, i, SEEK_SET);
+        fprintf(f, "%d\n", x);
+        i = ftell(f);
+        fseek(f, j, SEEK_SET);
+    }
+
+    if (fclose(f))
+    {
+        LOG_ERROR("не получилось сохранить изменения%s", "");
+        return EXIT_FAILURE;
+    }
+
+    if (truncate(filename, i))
+    {
+        LOG_ERROR("не получилось уменьшить размер файла%s", "");
+        return EXIT_FAILURE;
+    }
 
     return EXIT_SUCCESS;
 }
@@ -166,6 +214,16 @@ int remove_element(char *filename, tree_t **default_tree, tree_t **balanced_tree
     printf(YEL "Хеш таблица после удаления элемента:\n\n" RESET);
     delete_element_from_hashtable(*table, x);
     print_hashtable(*table);
+
+    int rc = remove_element_from_file(filename, x);
+
+    if (rc)
+    {
+        printf(RED "Не получилось удалить элемент из файла" RESET "\n");
+        return EXIT_FAILURE;
+    }
+
+    printf(YEL "Элемент удалён из файла" RESET "\n");
 
     return EXIT_SUCCESS;
 }
