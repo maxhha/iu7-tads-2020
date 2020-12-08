@@ -157,16 +157,16 @@ hashtable_t *restructure_hashtable(hashtable_t *table, hashfunc_t new_hash, int 
     return new_table;
 }
 
-void delete_element_from_hashtable(hashtable_t *table, int x)
+void delete_element_from_hashtable(hashtable_t *table, int x, int *cmprs)
 {
     int h = table->hash(x) % table->size;
 
-    for (int a = 0; a < table->size; a++)
+    for (int a = 0; (++(*cmprs)) && a < table->size; a++)
     {
         int i = (h + HASHPROB(a)) % table->size;
         int *item = table->items[i];
 
-        if (item != NULL && *item == x)
+        if ((++(*cmprs)) && item != NULL && *item == x)
         {
             free(item);
             table->items[i] = NULL;

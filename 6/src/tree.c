@@ -1,5 +1,6 @@
 #include "tree.h"
 
+#define IF(cond) if ((++(*(cmprs))) && (cond))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 tree_t *create_tree(int x)
@@ -326,24 +327,24 @@ int get_tree_balance(tree_t *root)
     return get_height(root->left) - get_height(root->right);
 }
 
-tree_t *delete_element_from_tree(tree_t* root, int val)
+tree_t *delete_element_from_tree(tree_t* root, int val, int *cmprs)
 {
-    if (root == NULL)
+    IF (root == NULL)
         return root;
 
-    if (val < root->val)
-        root->left = delete_element_from_tree(root->left, val);
-    else if (val > root->val)
-        root->right = delete_element_from_tree(root->right, val);
+    IF (val < root->val)
+        root->left = delete_element_from_tree(root->left, val, cmprs);
+    else IF (val > root->val)
+        root->right = delete_element_from_tree(root->right, val, cmprs);
     else
     {
-        if (root->left == NULL)
+        IF (root->left == NULL)
         {
             tree_t *temp = root->right;
             free(root);
             return temp;
         }
-        else if (root->right == NULL)
+        else IF (root->right == NULL)
         {
              tree_t *temp = root->left;
              free(root);
@@ -351,7 +352,7 @@ tree_t *delete_element_from_tree(tree_t* root, int val)
         }
         tree_t *temp = get_min_value_element(root->right);
         root->val = temp->val;
-        root->right = delete_element_from_tree(root->right, temp->val);
+        root->right = delete_element_from_tree(root->right, temp->val, cmprs);
     }
 
     root->height = 1 + MAX(get_height(root->left), get_height(root->right));
@@ -387,24 +388,24 @@ tree_t *rotate_tree_left(tree_t *root)
     return p;
 }
 
-tree_t *delete_element_from_balanced_tree(tree_t* root, int val)
+tree_t *delete_element_from_balanced_tree(tree_t* root, int val, int *cmprs)
 {
-    if (root == NULL)
+    IF (root == NULL)
         return root;
 
-    if (val < root->val)
-        root->left = delete_element_from_balanced_tree(root->left, val);
-    else if(val > root->val)
-        root->right = delete_element_from_balanced_tree(root->right, val);
+    IF (val < root->val)
+        root->left = delete_element_from_balanced_tree(root->left, val, cmprs);
+    else IF(val > root->val)
+        root->right = delete_element_from_balanced_tree(root->right, val, cmprs);
     else
     {
-        if(root->left == NULL || root->right == NULL)
+        IF(root->left == NULL || root->right == NULL)
         {
             tree_t *temp = root->left ?
                 root->left :
                 root->right;
 
-            if (temp == NULL)
+            IF (temp == NULL)
             {
                 temp = root;
                 root = NULL;
@@ -420,30 +421,30 @@ tree_t *delete_element_from_balanced_tree(tree_t* root, int val)
 
             root->val = temp->val;
 
-            root->right = delete_element_from_balanced_tree(root->right, temp->val);
+            root->right = delete_element_from_balanced_tree(root->right, temp->val, cmprs);
         }
     }
 
-    if (root == NULL)
+    IF (root == NULL)
         return root;
 
     root->height = 1 + MAX(get_height(root->left), get_height(root->right));
 
     int balance = get_tree_balance(root);
 
-    if (balance > 1 && get_tree_balance(root->left) >= 0)
+    IF (balance > 1 && get_tree_balance(root->left) >= 0)
         return rotate_tree_right(root);
 
-    if (balance > 1 && get_tree_balance(root->left) < 0)
+    IF (balance > 1 && get_tree_balance(root->left) < 0)
     {
         root->left = rotate_tree_left(root->left);
         return rotate_tree_right(root);
     }
 
-    if (balance < -1 && get_tree_balance(root->right) <= 0)
+    IF (balance < -1 && get_tree_balance(root->right) <= 0)
         return rotate_tree_left(root);
 
-    if (balance < -1 && get_tree_balance(root->right) > 0)
+    IF (balance < -1 && get_tree_balance(root->right) > 0)
     {
         root->right = rotate_tree_right(root->right);
         return rotate_tree_left(root);

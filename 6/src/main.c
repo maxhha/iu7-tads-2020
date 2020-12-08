@@ -1,5 +1,7 @@
 #include "main.h"
 
+#define IF(cond) if ((++(*(cmprs))) && (cond))
+
 uint64_t ticks(void)
 {
     uint64_t x;
@@ -161,11 +163,11 @@ int restructure_hashtable_by_entered_collosions(hashtable_t **table)
     return EXIT_SUCCESS;
 }
 
-int remove_element_from_file(char *filename, int val)
+int remove_element_from_file(char *filename, int val, int *cmprs)
 {
     FILE *f = fopen(filename, "r+");
 
-    if (f == NULL)
+    IF (f == NULL)
     {
         LOG_ERROR("не получилось открыть файл%s", "");
         return EXIT_FAILURE;
@@ -173,15 +175,15 @@ int remove_element_from_file(char *filename, int val)
 
     int i = 0, j = 0, x;
 
-    while (fscanf(f, "%d", &x) == 1)
+    while ((++(*cmprs)) && fscanf(f, "%d", &x) == 1)
     {
-        if (x == val)
+        IF (x == val)
         {
             j = ftell(f) + 1;
             continue;
         }
 
-        if (j == i)
+        IF (j == i)
         {
             i = j = ftell(f) + 1;
             continue;
@@ -195,13 +197,13 @@ int remove_element_from_file(char *filename, int val)
         fseek(f, j, SEEK_SET);
     }
 
-    if (fclose(f))
+    IF (fclose(f))
     {
         LOG_ERROR("не получилось сохранить изменения%s", "");
         return EXIT_FAILURE;
     }
 
-    if (truncate(filename, i))
+    IF (truncate(filename, i))
     {
         LOG_ERROR("не получилось уменьшить размер файла%s", "");
         return EXIT_FAILURE;
@@ -213,7 +215,7 @@ int remove_element_from_file(char *filename, int val)
 int remove_element(char *filename, tree_t **default_tree, tree_t **balanced_tree, hashtable_t **table)
 {
     uint64_t start, end;
-    int x = 944;
+    int x = 944, cmprs;
 
     printf(YEL "Введите элемент для удаления:" RESET "\n");
 
@@ -231,32 +233,39 @@ int remove_element(char *filename, tree_t **default_tree, tree_t **balanced_tree
     }
     #endif
 
+    cmprs = 0;
     start = ticks();
-    *default_tree = delete_element_from_tree(*default_tree, x);
+    *default_tree = delete_element_from_tree(*default_tree, x, &cmprs);
     end = ticks();
 
     printf(YEL "ДДП из файла после удаления элемента:\n\n" RESET);
     print_tree(*default_tree);
-    printf(YEL "Время удаления из ДДП: " RESET "%lu тактов\n\n", end - start);
+    printf(YEL "Время удаления из ДДП: " RESET "%lu тактов\n", end - start);
+    printf(YEL "Количество сравнений: " RESET "%d ифов\n\n", cmprs);
 
+    cmprs = 0;
     start = ticks();
-    *balanced_tree = delete_element_from_balanced_tree(*balanced_tree, x);
+    *balanced_tree = delete_element_from_balanced_tree(*balanced_tree, x, &cmprs);
     end = ticks();
 
     printf(YEL "Сбалансированное дерево после удаления элемента:\n\n" RESET);
     print_tree(*balanced_tree);
-    printf(YEL "Время удаления из сбаланисированного дерева:" RESET " %lu тактов\n\n", end - start);
+    printf(YEL "Время удаления из сбаланисированного дерева:" RESET " %lu тактов\n", end - start);
+    printf(YEL "Количество сравнений: " RESET "%d ифов\n\n", cmprs);
 
+    cmprs = 0;
     start = ticks();
-    delete_element_from_hashtable(*table, x);
+    delete_element_from_hashtable(*table, x, &cmprs);
     end = ticks();
 
     printf(YEL "Хеш таблица после удаления элемента:\n\n" RESET);
     print_hashtable(*table);
-    printf(YEL "Время удаления из хеш таблицы:" RESET " %lu тактов\n\n", end - start);
+    printf(YEL "Время удаления из хеш таблицы:" RESET " %lu тактов\n", end - start);
+    printf(YEL "Количество сравнений: " RESET "%d ифов\n\n", cmprs);
 
+    cmprs = 0;
     start = ticks();
-    int rc = remove_element_from_file(filename, x);
+    int rc = remove_element_from_file(filename, x, &cmprs);
     end = ticks();
 
     if (rc)
@@ -266,7 +275,8 @@ int remove_element(char *filename, tree_t **default_tree, tree_t **balanced_tree
     }
 
     printf(YEL "Элемент удалён из файла" RESET "\n");
-    printf(YEL "Время удаления из файла:" RESET " %lu тактов\n\n", end - start);
+    printf(YEL "Время удаления из файла:" RESET " %lu тактов\n", end - start);
+    printf(YEL "Количество сравнений: " RESET "%d ифов\n\n", cmprs);
 
     return EXIT_SUCCESS;
 }
