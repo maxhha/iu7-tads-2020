@@ -179,6 +179,7 @@ void print_tree(tree_t *root)
     #define DEFAULT_BUF_SIZE 16
     char *buf = malloc(sizeof(char) * DEFAULT_BUF_SIZE);
     size_t buf_size = DEFAULT_BUF_SIZE;
+    buf[0] = 0;
 
     print_tree_node(root, get_max_print_val_len(root), 0, &buf, &buf_size);
 
@@ -290,4 +291,57 @@ tree_t *balance_tree(tree_t *root)
     root->right = balance_bamboo(root->right);
 
     return root;
+}
+
+tree_t *find_tree_val(tree_t *root, int val)
+{
+    while (root)
+    {
+        if (root->val == val)
+            return root;
+        else if (root->val < val)
+            root = root->left;
+        else
+            root = root->right;
+    }
+
+    return NULL;
+}
+
+tree_t *get_min_value_element(tree_t *root)
+{
+    tree_t *p = root;
+    while (p && p->left != NULL)
+       p = p->left;
+    return p;
+}
+
+tree_t *delete_element_from_tree(tree_t* root, int val)
+{
+    if (root == NULL)
+        return root;
+
+    if (val < root->val)
+        root->left = delete_element_from_tree(root->left, val);
+    else if (val > root->val)
+        root->right = delete_element_from_tree(root->right, val);
+    else
+    {
+        if (root->left == NULL)
+        {
+            tree_t *temp = root->right;
+            free(root);
+            return temp;
+        }
+        else if (root->right == NULL)
+        {
+             tree_t *temp = root->left;
+             free(root);
+             return temp;
+        }
+        tree_t *temp = get_min_value_element(root->right);
+        root->val = temp->val;
+        root->right = delete_element_from_tree(root->right, temp->val);
+   }
+   return root;
 }

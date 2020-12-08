@@ -83,6 +83,85 @@ int read_hashtable_from_file(char *filename, hashtable_t **table)
     return EXIT_SUCCESS;
 }
 
+int restructure_hashtable_by_entered_collosions(hashtable_t **table)
+{
+    int target_avg_collisions = 10, rc = 1;
+
+    #ifndef DEBUG
+    do
+    {
+        if (rc != 1 || target_avg_collisions < 1)
+            printf(RED "Неправильное число" RESET "\n");
+
+        printf(YEL "Введите среднее количество коллизий:" RESET "\n");
+
+    } while((rc = scanf("%d", &target_avg_collisions)) != 1 && rc >= 0);
+    #endif
+
+    if (rc < 0)
+        return EXIT_FAILURE;
+
+    int avg_collisions = (*table)->n_collisions;
+    avg_collisions /= get_hashtable_count_items(*table);
+
+    if (target_avg_collisions >= avg_collisions)
+    {
+        printf(YEL "Реструктуризация не нужна" RESET "\n\n");
+        return EXIT_SUCCESS;
+    }
+
+    int new_size = (*table)->size;
+
+    while (target_avg_collisions < avg_collisions)
+    {
+        hashtable_t *new_table = restructure_hashtable(*table, complex_hash, new_size);
+
+        if (new_table == NULL)
+        {
+            LOG_ERROR("не удалось реструктуризировать%s", "");
+            return EXIT_FAILURE;
+        }
+
+        free_hashtable(*table);
+        *table = new_table;
+        avg_collisions = (*table)->n_collisions;
+        avg_collisions /= get_hashtable_count_items(*table);
+        new_size = next_prime((*table)->size);
+    }
+
+    printf(YEL "Хеш таблица c сложной функцией хэширования:\n" RESET);
+    print_hashtable(*table);
+
+    return EXIT_SUCCESS;
+}
+
+int remove_element(tree_t **default_tree, tree_t **balanced_tree, hashtable_t **table)
+{
+    int rc = 1, x = 944;
+
+    printf(YEL "Введите элемент для удаления:" RESET "\n");
+
+    #ifndef DEBUG
+    while((rc = scanf("%d", &x)) != 1 && rc >= 0 && find_tree_val(*balanced_tree, x) == NULL)
+    {
+        if (rc != 1)
+            printf(RED "Неправильное число" RESET "\n");
+        else if (find_tree_val(*balanced_tree, x) == NULL)
+            printf(RED "Нет такого элемента в файле" RESET "\n");
+    }
+    #endif
+
+    if (rc < 0)
+        return EXIT_FAILURE;
+
+    *default_tree = delete_element_from_tree(*default_tree, x);
+
+    printf(YEL "ДДП из файла после удаления элемента:\n\n" RESET);
+    print_tree(*default_tree);
+
+    return EXIT_SUCCESS;
+}
+
 int main(int argc, char **argv)
 {
     char *filename;
@@ -134,21 +213,9 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    printf(YEL "Хеш таблица c простой функцией хэширования:\n" RESET);
     print_hashtable(table);
 
-    int target_n_collsions = 1, rc = 1;
-
-    do
-    {
-        if (rc != 1 || target_n_collsions < 1)
-            printf(RED "Неправильное число" RESET "\n");
-
-        printf(YEL "Введите среднее количество коллизий:" RESET "\n");
-
-    } while((rc = scanf("%d", &target_n_collsions)) != 1 && rc >= 0);
-
-    if (rc < 0)
+    if (restructure_hashtable_by_entered_collosions(&table))
     {
         free_tree(default_tree);
         free_tree(balanced_tree);
@@ -156,30 +223,12 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    target_n_collsions *= get_hashtable_count_items(table);
-
-    if (target_n_collsions < table->n_collisions)
+    if (remove_element(&default_tree, &balanced_tree, &table))
     {
-        while (target_n_collsions < table->n_collisions)
-        {
-            int new_size = table->hash == simple_hash ? table->size : next_prime(table->size);
-            hashtable_t *new_table = restructure_hashtable(table, complex_hash, new_size);
-
-            if (new_table == NULL)
-            {
-                LOG_ERROR("не удалось реструктуризировать%s", "");
-                free_tree(default_tree);
-                free_tree(balanced_tree);
-                free_hashtable(table);
-                return EXIT_FAILURE;
-            }
-            
-            free_hashtable(table);
-            table = new_table;
-        }
-
-        printf(YEL "Хеш таблица c сложной функцией хэширования:\n" RESET);
-        print_hashtable(table);
+        free_tree(default_tree);
+        free_tree(balanced_tree);
+        free_hashtable(table);
+        return EXIT_FAILURE;
     }
 
     free_tree(default_tree);

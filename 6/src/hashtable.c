@@ -100,10 +100,6 @@ hashtable_t *read_to_hashtable(FILE *f, hashfunc_t hash, int size)
             free_hashtable(table);
             return NULL;
         }
-        #ifdef DEBUG
-        LOG_DEBUG("add element %d", x);
-        print_hashtable(table);
-        #endif
     }
 
     return table;

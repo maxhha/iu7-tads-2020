@@ -21,5 +21,7 @@ void print_tree(tree_t *root);
 tree_t *tree_into_bamboo(tree_t *root);
 tree_t *balance_tree(tree_t *root);
 int copy_tree(tree_t *root, tree_t **new_root);
+tree_t *find_tree_val(tree_t *root, int val);
+tree_t *delete_element_from_tree(tree_t* root, int val);
 
 #endif // __TREE_H__
