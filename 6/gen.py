@@ -38,8 +38,6 @@ with open(FILE, "w") as f:
     for i in data:
         f.write(str(i) + '\n')
 
-
-
 hashtable_size = next_prime(KEEP + 1)
 
 def get_rand_params():
@@ -90,12 +88,12 @@ for _ in range(5000):
 
 print("//", len(set(i % hashtable_size for i in data)), "vs", best_score)
 print("// hashes:", best_hashes)
-print(best_func)
+# print(best_func)
 
-for i in data:
-    print("hash(%d)" % i, end="")
-    x = i
-    exec(best_func, None, None)
-    print(" =", x % hashtable_size)
+# for i in data:
+#     print("hash(%d)" % i, end="")
+#     x = i
+#     exec(best_func, None, None)
+#     print(" =", x % hashtable_size)
 
 print(c_template.format(*best_params))
