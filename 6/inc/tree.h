@@ -20,5 +20,6 @@ void free_tree(tree_t *root);
 void print_tree(tree_t *root);
 tree_t *tree_into_bamboo(tree_t *root);
 tree_t *balance_tree(tree_t *root);
+int copy_tree(tree_t *root, tree_t **new_root);
 
 #endif // __TREE_H__

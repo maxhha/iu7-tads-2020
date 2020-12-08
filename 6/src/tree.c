@@ -27,6 +27,31 @@ void free_tree(tree_t *root)
     free(root);
 }
 
+int copy_tree(tree_t *root, tree_t **new_root)
+{
+    *new_root = create_tree(root->val);
+    if (*new_root == NULL)
+        return 1;
+
+    if (root->left != NULL)
+        if (copy_tree(root->left, &(*new_root)->left))
+        {
+            free_tree(*new_root);
+            *new_root = NULL;
+            return 1;
+        }
+
+    if (root->right != NULL)
+        if (copy_tree(root->right, &(*new_root)->right))
+        {
+            free_tree(*new_root);
+            *new_root = NULL;
+            return 1;
+        }
+
+    return 0;
+}
+
 tree_t *tree_add(tree_t *root, int x)
 {
     tree_t *p = root;
@@ -214,6 +239,29 @@ tree_t *split_bamboo(tree_t *root)
     return new_root;
 }
 
+tree_t *balance_bamboo(tree_t *root)
+{
+    if (root == NULL)
+        return NULL;
+
+    #ifdef DEBUG
+    LOG_DEBUG("balancing:%s", "");
+    print_tree(root);
+    #endif
+
+    root = split_bamboo(root);
+
+    #ifdef DEBUG
+    LOG_DEBUG("splitted bamboo:%s", "");
+    print_tree(root);
+    #endif
+
+    root->left = balance_tree(root->left);
+    root->right = balance_tree(root->right);
+
+    return root;
+}
+
 tree_t *balance_tree(tree_t *root)
 {
     if (root == NULL)
@@ -238,9 +286,8 @@ tree_t *balance_tree(tree_t *root)
     print_tree(root);
     #endif
 
-
-    root->left = balance_tree(root->left);
-    root->right = balance_tree(root->right);
+    root->left = balance_bamboo(root->left);
+    root->right = balance_bamboo(root->right);
 
     return root;
 }
