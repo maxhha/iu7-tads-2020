@@ -1,7 +1,7 @@
 .PHONY : init all run debug runmem gcov clean func unit dev fdev udev
 
 CC := gcc
-CFLAGS := --std=gnu99 -Wall -Werror -Wfloat-equal -Wfloat-conversion -Wpedantic
+CFLAGS := --std=gnu99 -Wall -Werror -Wfloat-equal -Wfloat-conversion -Wpedantic -I./inc
 CFLAGS += $(cflags)
 SRCS := $(filter-out $(wildcard src/*.tmpl.c), $(wildcard src/*.c))
 OBJS := $(SRCS:src/%.c=out/%.o)

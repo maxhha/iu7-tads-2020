@@ -1,5 +1,6 @@
 gcc
 --std=gnu99
+-I./inc
 -Wall
 -Werror
 -Wfloat-equal

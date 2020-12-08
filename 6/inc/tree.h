@@ -16,6 +16,9 @@ struct tree_s
 };
 
 tree_t *read_to_tree(FILE *f);
+void free_tree(tree_t *root);
 void print_tree(tree_t *root);
+tree_t *tree_into_bamboo(tree_t *root);
+tree_t *balance_tree(tree_t *root);
 
 #endif // __TREE_H__

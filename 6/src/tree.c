@@ -17,6 +17,16 @@ tree_t *create_tree(int x)
     return root;
 }
 
+void free_tree(tree_t *root)
+{
+    if (!root)
+        return;
+
+    free_tree(root->left);
+    free_tree(root->right);
+    free(root);
+}
+
 tree_t *tree_add(tree_t *root, int x)
 {
     tree_t *p = root;
@@ -31,10 +41,14 @@ tree_t *tree_add(tree_t *root, int x)
             target = &p->left;
             p = p->left;
         }
-        else
+        else if (x > p->val)
         {
             target = &p->right;
             p = p->right;
+        }
+        else
+        {
+            return root;
         }
     }
 
@@ -58,11 +72,30 @@ tree_t *read_to_tree(FILE *f)
     return root;
 }
 
-void print_tree_node(tree_t *root, int side, char **buf, size_t *buf_size)
+#define VAL_FORMAT "[ %*d ]"
+
+size_t get_max_print_val_len(tree_t *root)
 {
-    #define VAL_FORMAT "[" YEL "%d" RESET "]"
-    #define SUB_COLORS YEL RESET
-    size_t val_len = snprintf(NULL, 0, VAL_FORMAT, root->val);
+    if (root == NULL)
+        return 0;
+
+    size_t max = snprintf(NULL, 0, VAL_FORMAT, 0, root->val);
+    size_t x = get_max_print_val_len(root->left);
+
+    if (x > max)
+        max = x;
+
+    x = get_max_print_val_len(root->right);
+
+    if (x > max)
+        max = x;
+
+    return max;
+}
+
+void print_tree_node(tree_t *root, size_t max_val_len, int side, char **buf, size_t *buf_size)
+{
+    size_t val_len = max_val_len;
     size_t buf_len = strlen(*buf);
     size_t min_size = buf_len + val_len + 1;
 
@@ -83,50 +116,131 @@ void print_tree_node(tree_t *root, int side, char **buf, size_t *buf_size)
         *buf_size = min_size;
     }
 
-    val_len -= snprintf(NULL, 0, SUB_COLORS);
-
-    int i = buf_len;
-
-    for (; i < buf_len + val_len; i++)
+    for (int i = buf_len; i < buf_len + val_len; i++)
         (*buf)[i] = ' ';
 
-    (*buf)[i] = '\0';
+    (*buf)[buf_len + val_len] = '\0';
 
     if (buf_len > 0)
         (*buf)[buf_len - 1] = side > 0 ? '|' : ' ';
 
     if (root->left)
-        print_tree_node(root->left, -1, buf, buf_size);
+        print_tree_node(root->left, max_val_len, -1, buf, buf_size);
 
     if (buf_len > 0)
         (*buf)[buf_len - 1] = '+';
 
     (*buf)[buf_len] = '\0';
-    printf("%s" VAL_FORMAT "\n", *buf, root->val);
+
+    int add_spaces = (int) max_val_len - snprintf(NULL, 0, VAL_FORMAT, 0, 0) + 1;
+    printf("%s" VAL_FORMAT "\n", *buf, add_spaces, root->val);
 
     if (buf_len > 0)
         (*buf)[buf_len - 1] = side < 0 ? '|' : ' ';
 
-    i = buf_len;
-
-    for (; i < buf_len + val_len; i++)
+    for (int i = buf_len; i < buf_len + val_len; i++)
         (*buf)[i] = ' ';
 
-    (*buf)[i] = '\0';
+    (*buf)[buf_len + val_len] = '\0';
 
     if (root->right)
-        print_tree_node(root->right, 1, buf, buf_size);
+        print_tree_node(root->right, max_val_len, 1, buf, buf_size);
 
     (*buf)[buf_len] = '\0';
 }
 
 void print_tree(tree_t *root)
 {
-    char *buf = malloc(sizeof(char));
-    size_t buf_size = 1;
+    #define DEFAULT_BUF_SIZE 16
+    char *buf = malloc(sizeof(char) * DEFAULT_BUF_SIZE);
+    size_t buf_size = DEFAULT_BUF_SIZE;
 
-    print_tree_node(root, 0, &buf, &buf_size);
+    print_tree_node(root, get_max_print_val_len(root), 0, &buf, &buf_size);
 
     if (buf)
         free(buf);
+}
+
+tree_t *tree_into_bamboo(tree_t *root)
+{
+    if (root == NULL || (root->left == NULL && root->right == NULL))
+        return root;
+
+    root->right = tree_into_bamboo(root->right);
+
+    if (root->left == NULL)
+        return root;
+
+    tree_t *new_root = tree_into_bamboo(root->left);
+    tree_t *p = new_root;
+
+    while (p->right != NULL)
+        p = p->right;
+
+    p->right = root;
+    root->left = NULL;
+
+    return new_root;
+}
+
+tree_t *split_bamboo(tree_t *root)
+{
+    if (root == NULL || root->right == NULL || root->right->right == NULL)
+        return root;
+
+    tree_t *turtle = root, *hare = root->right->right;
+
+    LOG_DEBUG("turtle    hare%s", "");
+
+    while (hare != NULL)
+    {
+        LOG_DEBUG("%6d  %6d", turtle->val, hare->val);
+
+        hare = hare->right;
+        if (hare == NULL)
+            break;
+
+        LOG_DEBUG("        %6d", hare->val);
+        turtle = turtle->right;
+        hare = hare->right;
+    }
+
+    LOG_DEBUG("%6d", turtle->val);
+
+    tree_t *new_root = turtle->right;
+    turtle->right = NULL;
+    new_root->left = root;
+
+    return new_root;
+}
+
+tree_t *balance_tree(tree_t *root)
+{
+    if (root == NULL)
+        return NULL;
+
+    #ifdef DEBUG
+    LOG_DEBUG("balancing:%s", "");
+    print_tree(root);
+    #endif
+
+    root = tree_into_bamboo(root);
+
+    #ifdef DEBUG
+    LOG_DEBUG("bamboo:%s", "");
+    print_tree(root);
+    #endif
+
+    root = split_bamboo(root);
+
+    #ifdef DEBUG
+    LOG_DEBUG("bamboo:%s", "");
+    print_tree(root);
+    #endif
+
+
+    root->left = balance_tree(root->left);
+    root->right = balance_tree(root->right);
+
+    return root;
 }

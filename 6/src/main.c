@@ -25,9 +25,22 @@ int main(int argc, char **argv)
 
     tree_t *default_tree = read_to_tree(f);
 
+    printf(YEL "ДДП из файла:\n\n" RESET);
     print_tree(default_tree);
+    printf("\n");
+
+    rewind(f);
+
+    tree_t *balanced_tree = balance_tree(read_to_tree(f));
+
+    printf(YEL "Сбалансированное дерево:\n\n" RESET);
+    print_tree(balanced_tree);
+    printf("\n");
 
     fclose(f);
+
+    free_tree(default_tree);
+    free_tree(balanced_tree);
 
     return EXIT_SUCCESS;
 }
