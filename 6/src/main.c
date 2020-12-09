@@ -136,11 +136,11 @@ int restructure_hashtable_by_entered_collosions(hashtable_t **table)
 
     int new_size = (*table)->size;
 
+    start = ticks();
     while (target_avg_collisions < avg_collisions)
     {
-        start = ticks();
+
         hashtable_t *new_table = restructure_hashtable(*table, complex_hash, new_size);
-        end = ticks();
 
         if (new_table == NULL)
         {
@@ -154,6 +154,7 @@ int restructure_hashtable_by_entered_collosions(hashtable_t **table)
         avg_collisions /= get_hashtable_count_items(*table);
         new_size = next_prime((*table)->size);
     }
+    end = ticks();
 
     printf(YEL "Хеш таблица c сложной функцией хэширования:\n" RESET);
     print_hashtable(*table);
