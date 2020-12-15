@@ -8,6 +8,7 @@
 #include "log.h"
 #include "stack.h"
 #include "graph_matrix.h"
+#include "graph_list.h"
 
 #define OUTPUT_FILE "graph.gv"
 #define OUTPUT_IMG_FILE "result.png"
@@ -23,6 +24,7 @@ int stack_pop_vertex(stack_t *s, int *vertex, int *distance);
 void print_result_verteces(int *distances, int n, int param_t);
 
 int process_with_graph_matrix(char *filename, int capital, int param_t);
+int process_with_graph_list(char *filename, int capital, int param_t);
 
 
 #endif // __READ_GRAPH_H__

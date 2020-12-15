@@ -4,6 +4,10 @@
 #include "graph.tmpl.c"
 #undef G
 
+#define G graph_list
+#include "graph.tmpl.c"
+#undef G
+
 uint64_t ticks(void)
 {
     uint64_t x;

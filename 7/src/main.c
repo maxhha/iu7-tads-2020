@@ -83,7 +83,7 @@ int main(int argc, char **argv)
     }
     else if (strcmp(type, TYPE_GRAPH_LIST) == 0)
     {
-        rc = EXIT_FAILURE;
+        rc = process_with_graph_list(filename, capital, param_t);
     }
     else
     {
