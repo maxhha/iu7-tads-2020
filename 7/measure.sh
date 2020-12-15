@@ -2,17 +2,18 @@
 PROG=./app.exe
 FILE=result.csv
 
-printf "file\telement\tВремя построения дерева\tВремя балансирования дерева\tВремя построения хеш таблицы\tВремя удаления из ДДП\tВремя удаления из сбалансированного дерева\tВремя удаления из хеш таблицы\tВремя удаления из файла\tСравнений ДДП\tСравнений АВЛ\tСравнений хеш-таблицы\tСравнений в файле\n" > $FILE
+printf "ver n\tedges percent\tВремя чтения m\tВремя дистанций m\tВремя записи m\tВремя чтения l\tВремя дистанций l\tВремя записи l\n" > $FILE
 
-for i in in0.txt in1.txt in2.txt in3.txt
+for ver_n in 10 100 250
 do
-  git restore $i
-  for j in $(cat $i)
+  for edges_perc in 25 50 75
   do
-    printf "$i\t$j\t" >> $FILE
-    result=$((echo 3; echo $j) | $PROG $i | sed -r "s/\x1B\[([0-9]{1,3}(;[0-9]{1,2})?)?[mGK]//g")
-    printf "$result" | grep "Время" | sed -r "s/.+реструктуризации хеш таблицы:.+//g" | sed -z -e "s/\n\n/\n/g" | sed -Ee "s/.+ ([0-9]+) .+/\1/g" | sed -z -Ee "s/\n/\t/g" >> $FILE
-    printf "$result" | grep "сравнений" | sed -Ee "s/.+ ([0-9]+) .+/\1/g" | sed -z -Ee "s/\n([0-9]+)/\t\1/g" >> $FILE
-    git restore $i
+      printf "$ver_n\t$edges_perc\t" >> $FILE
+
+      result=$($PROG "in_${ver_n}_${edges_perc}.txt" 1 0 m nodraw | sed -r "s/\x1B\[([0-9]{1,3}(;[0-9]{1,2})?)?[mGK]//g")
+      printf "$result" | grep "Время" | sed -z -e "s/\n\n/\n/g" | sed -Ee "s/.+ ([0-9]+) .+/\1/g" | sed -z -Ee "s/\n/\t/g" >> $FILE
+
+      result=$($PROG "in_${ver_n}_${edges_perc}.txt" 1 0 l nodraw | sed -r "s/\x1B\[([0-9]{1,3}(;[0-9]{1,2})?)?[mGK]//g")
+      printf "$result" | grep "Время" | sed -z -e "s/\n\n/\n/g" | sed -Ee "s/.+ ([0-9]+) .+/\1/g" | sed -z -Ee "s/\n([0-9]+)/\t\1/g" >> $FILE
   done
 done
