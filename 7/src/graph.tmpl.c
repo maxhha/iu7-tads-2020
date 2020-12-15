@@ -36,14 +36,14 @@ G_T *TMPL(read, G)(FILE *f)
 
         v1--; v2--;
 
-        if (v1 < 0 || v1 >= n || v2 < 0 || v2 >= n)
+        if (v1 < 0 || v1 >= n || v2 < 0 || v2 >= n || w < 0)
         {
-            LOG_ERROR("неправильная дуга %d -- %d", v1 + 1, v2 + 1);
+            LOG_ERROR("неправильная дуга %d %d %d", v1 + 1, v2 + 1, w);
         }
 
         if (TMPL(G, get)(g, v1, v2) != -1)
         {
-            LOG_ERROR("повторная дуга %d -- %d", v1 + 1, v2 + 1);
+            LOG_ERROR("повторная дуга %d %d", v1 + 1, v2 + 1);
             TMPL(free, G)(g);
             return NULL;
         }
@@ -55,7 +55,7 @@ G_T *TMPL(read, G)(FILE *f)
     return g;
 }
 
-int TMPL(save, G)(G_T *g, char *filename)
+int TMPL(save, G)(char *filename, G_T *g, int *distances, int capital, int color_from_dist)
 {
     FILE *f = fopen(filename, "w");
 
@@ -65,18 +65,31 @@ int TMPL(save, G)(G_T *g, char *filename)
         return EXIT_FAILURE;
     }
 
-    fprintf(f, "graph graphname {\n");
+    fprintf(f, "graph {\n");
 
     for (int i = 0; i < g->verteces_n; i++)
     {
-        fprintf(f, "\t%d;\n", i + 1);
+        fprintf(f, "\t%d [label = \"%d (%d)\",", i + 1, i + 1, distances[i]);
 
+        if (i == capital)
+            fprintf(f, CAPITAL_VERTEX_DOT_ATTRS);
+
+        if (distances[i] == -1)
+            fprintf(f, UNVISITED_VERTEX_DOT_ATTRS);
+        else if (distances[i] > color_from_dist)
+            fprintf(f, SELECTED_VERTEX_DOT_ATTRS);
+
+        fprintf(f, "]\n");
+    }
+
+    for (int i = 0; i < g->verteces_n; i++)
+    {
         for (
             int j = TMPL(G, get_next)(g, i, -1);
             j >= 0 && j < i;
             j = TMPL(G, get_next)(g, i, j))
         {
-            fprintf(f, "\t%d -- %d [label=%d];\n", i + 1, j + 1, TMPL(G, get)(g, i, j));
+            fprintf(f, "\t%d -- %d [label = %d];\n", i + 1, j + 1, TMPL(G, get)(g, i, j));
         }
     }
 
@@ -85,8 +98,78 @@ int TMPL(save, G)(G_T *g, char *filename)
     return fclose(f);
 }
 
+int *TMPL(create_distance_map_for, G)(G_T *g, int capital)
+{
+    int *map = malloc(sizeof(int) * g->verteces_n);
+
+    if (map == NULL)
+    {
+        LOG_ERROR("не получилось создать массив расстояний%s", "");
+        return NULL;
+    }
+
+    for (int i = 0; i < g->verteces_n; i++)
+        map[i] = -1;
+
+    stack_t *stack = create_stack(g->verteces_n * g->verteces_n);
+
+    if (stack == NULL)
+    {
+        LOG_ERROR("не получилось создать стек%s", "");
+        free(map);
+        return NULL;
+    }
+
+    if (stack_push_vertex(stack, capital, 0))
+    {
+        LOG_ERROR("не получилось добавить столицу%s", "");
+
+        free_stack(stack);
+        free(map);
+        return NULL;
+    }
+
+    int v, d;
+
+    while (!stack_pop_vertex(stack, &v, &d))
+    {
+        if (map[v] != -1 && d > map[v])
+            continue;
+
+        map[v] = d;
+
+        for (
+            int i = TMPL(G, get_next)(g, v, -1);
+            i != -1;
+            i = TMPL(G, get_next)(g, v, i))
+        {
+            if (stack_push_vertex(stack, i, d + TMPL(G, get)(g, v, i)))
+            {
+                LOG_ERROR("не получилось добавить вершину в стек%s", "");
+
+                do
+                {
+                    int i, j;
+
+                    if (stack_pop_vertex(stack, &i, &j))
+                        break;
+
+                } while (1);
+
+                free_stack(stack);
+                free(map);
+                return NULL;
+            }
+        }
+    }
+
+    free_stack(stack);
+    return map;
+}
+
 int TMPL(process_with, G)(char *filename, int capital, int param_t)
 {
+    uint64_t start, end;
     FILE *f = fopen(filename, "r");
 
     if (f == NULL)
@@ -95,7 +178,11 @@ int TMPL(process_with, G)(char *filename, int capital, int param_t)
         return EXIT_FAILURE;
     }
 
+    start = ticks();
     G_T *g = TMPL(read, G)(f);
+    end = ticks();
+
+    printf("Время чтения графа из файла: %lu тактов\n", end - start);
 
     fclose(f);
 
@@ -105,7 +192,35 @@ int TMPL(process_with, G)(char *filename, int capital, int param_t)
         return EXIT_FAILURE;
     }
 
-    int rc = TMPL(save, G)(g, OUTPUT_FILE);
+    if (capital >= g->verteces_n)
+    {
+        LOG_ERROR("номер столицы больше числа вершин в графе%s", "");
+
+        TMPL(free, G)(g);
+        return EXIT_FAILURE;
+    }
+
+    start = ticks();
+    int *distances = TMPL(create_distance_map_for, G)(g, capital);
+    end = ticks();
+
+    if (distances == NULL)
+    {
+        LOG_ERROR("не получилось рассчитать расстояния до столицы%s", "");
+
+        TMPL(free, G)(g);
+        return EXIT_FAILURE;
+    }
+
+    printf("Время вычисления расстояний: %lu тактов\n", end - start);
+
+    print_result_verteces(distances, g->verteces_n, param_t);
+
+    start = ticks();
+    int rc = TMPL(save, G)(OUTPUT_FILE, g, distances, capital, param_t);
+    end = ticks();
+
+    free(distances);
     TMPL(free, G)(g);
 
     if (rc)
@@ -113,6 +228,8 @@ int TMPL(process_with, G)(char *filename, int capital, int param_t)
         LOG_ERROR("не получилось сохранить результат в файл%s", "");
         return EXIT_FAILURE;
     }
+
+    printf("Время сохранения результата в файл: %lu тактов\n", end - start);
 
     return EXIT_SUCCESS;
 }

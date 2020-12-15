@@ -3,7 +3,8 @@
 
 #include <stdio.h>
 
-// #define LOG_LEVEL NO_LOG
+#define LOG_LEVEL NO_LOG
+// #define DEBUG
 #include "macrologger.h"
 #include "colors.h"
 
@@ -19,8 +20,5 @@
 fprintf(stderr, "Инфо: " message NEWLINE, ## __VA_ARGS__ )
 #endif
 
-#if LOG_LEVEL >= DEBUG_LEVEL
-#define DEBUG
-#endif
 
 #endif // __LOG_H__
