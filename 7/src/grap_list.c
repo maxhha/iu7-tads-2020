@@ -18,14 +18,14 @@ graph_list_t *create_graph_list(int n)
     for (int i = 0; i < n; i++)
         g->data[i] = NULL;
 
-    g->verteces_n = n;
+    g->vertices_n = n;
 
     return g;
 }
 
 void free_graph_list(graph_list_t *g)
 {
-    for (int i = 0; i < g->verteces_n; i++)
+    for (int i = 0; i < g->vertices_n; i++)
     {
         for (list_t *p = g->data[i]; p != NULL; )
         {
@@ -73,6 +73,9 @@ int graph_list_get(graph_list_t *g, int v_from, int v_to)
     return -1;
 }
 
+static list_t *prev_in_iter = NULL;
+static int prev_iter_v_from = -1;
+
 int graph_list_get_next(graph_list_t *g, int v_from, int v_last)
 {
     list_t *p = g->data[v_from];
@@ -81,12 +84,18 @@ int graph_list_get_next(graph_list_t *g, int v_from, int v_last)
         return -1;
 
     if (v_last == -1)
-        return p->vertex;
+    {
+        prev_iter_v_from = v_from;
+        return (prev_in_iter = p)->vertex;
+    }
 
-    while (p != NULL && p->vertex != v_last)
-        p = p->next;
+    if (prev_iter_v_from == v_from)
+        p = prev_in_iter;
+    else
+        while (p != NULL && p->vertex != v_last)
+            p = p->next;
 
-    p = p->next;
+    prev_in_iter = p = p->next;
 
     return p == NULL ? -1 : p->vertex;
 }

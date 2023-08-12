@@ -6,7 +6,7 @@
 typedef struct
 {
     int *data;
-    int verteces_n;
+    int vertices_n;
 } graph_matrix_t;
 
 graph_matrix_t *create_graph_matrix(int n);

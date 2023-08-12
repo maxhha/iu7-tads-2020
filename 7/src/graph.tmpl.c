@@ -67,7 +67,7 @@ int TMPL(save, G)(char *filename, G_T *g, int *distances, int capital, int color
 
     fprintf(f, "graph {\n");
 
-    for (int i = 0; i < g->verteces_n; i++)
+    for (int i = 0; i < g->vertices_n; i++)
     {
         fprintf(f, "\t%d [label = \"%d (%d)\",", i + 1, i + 1, distances[i]);
 
@@ -82,7 +82,7 @@ int TMPL(save, G)(char *filename, G_T *g, int *distances, int capital, int color
         fprintf(f, "]\n");
     }
 
-    for (int i = 0; i < g->verteces_n; i++)
+    for (int i = 0; i < g->vertices_n; i++)
     {
         for (
             int j = TMPL(G, get_next)(g, i, -1);
@@ -100,7 +100,7 @@ int TMPL(save, G)(char *filename, G_T *g, int *distances, int capital, int color
 
 int *TMPL(create_distance_map_for, G)(G_T *g, int capital)
 {
-    int *map = malloc(sizeof(int) * g->verteces_n);
+    int *map = malloc(sizeof(int) * g->vertices_n);
 
     if (map == NULL)
     {
@@ -108,10 +108,10 @@ int *TMPL(create_distance_map_for, G)(G_T *g, int capital)
         return NULL;
     }
 
-    for (int i = 0; i < g->verteces_n; i++)
+    for (int i = 0; i < g->vertices_n; i++)
         map[i] = -1;
 
-    stack_t *stack = create_stack(g->verteces_n * g->verteces_n);
+    stack_t *stack = create_stack(g->vertices_n * g->vertices_n);
 
     if (stack == NULL)
     {
@@ -192,7 +192,7 @@ int TMPL(process_with, G)(char *filename, int capital, int param_t)
         return EXIT_FAILURE;
     }
 
-    if (capital >= g->verteces_n)
+    if (capital >= g->vertices_n)
     {
         LOG_ERROR("номер столицы больше числа вершин в графе%s", "");
 
@@ -214,7 +214,7 @@ int TMPL(process_with, G)(char *filename, int capital, int param_t)
 
     printf("Время вычисления расстояний: %lu тактов\n", end - start);
 
-    print_result_verteces(distances, g->verteces_n, param_t);
+    print_result_verteces(distances, g->vertices_n, param_t);
 
     start = ticks();
     int rc = TMPL(save, G)(OUTPUT_FILE, g, distances, capital, param_t);

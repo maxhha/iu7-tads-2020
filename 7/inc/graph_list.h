@@ -15,7 +15,7 @@ struct list_s
 typedef struct
 {
     list_t **data;
-    int verteces_n;
+    int vertices_n;
 } graph_list_t;
 
 graph_list_t *create_graph_list(int n);
